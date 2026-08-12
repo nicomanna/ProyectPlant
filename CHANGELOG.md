@@ -5,6 +5,27 @@
 
 ---
 
+## [0.10.5] — 2026-08-12
+
+### Changed — Botón de preview del confeti siempre visible en modo dev
+
+#### Archivos afectados
+- `src/components/features/ConfettiPreview/ConfettiPreview.tsx` — Botón flotante visible en dev, `null` en producción
+- `docs/features/confeti.md` — Actualizada la sección de preview
+
+### Descripción detallada
+El usuelo reportó que el botón "Reclamar (preview)" no aparecía: la causa es que el **proxy de auth redirige a `/login` y pierde el query param** `?preview=claim`, y también que el login vuelve a `/` sin él.
+
+Se cambió el mecanismo a uno controlado por **entorno**: el botón flotante aparece **siempre en modo dev** (`process.env.NODE_ENV === 'development'`), sin depender de la URL ni del proxy. En producción (`next build` / Vercel) el componente renderiza `null` — el preview es solo de desarrollo. Se mantiene `?preview=reach` para la ráfaga corta al cargar en dev.
+
+### Verificación
+`npm run build` sin errores de TypeScript ni de lint.
+
+### Request original
+> todavía no me aparece ningun botón → cambiar a botón siempre visible en modo dev.
+
+---
+
 ## [0.10.4] — 2026-08-12
 
 ### Changed — Preview del confeti: botón "Reclamar (preview)" con `?preview=claim`

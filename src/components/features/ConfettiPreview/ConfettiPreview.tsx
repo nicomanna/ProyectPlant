@@ -6,16 +6,18 @@ import { fireCelebration } from '@/lib/confetti'
 
 const PREVIEW_PARAM = 'preview'
 
+const IS_DEV = process.env.NODE_ENV === 'development'
+
 /**
  * Preview de debug del confeti, sin depender de 700 pts reales.
  *
- * - `?preview=reach` → dispara la ráfaga corta de cruce de meta al cargar.
- * - `?preview=claim` → muestra un botón flotante "Reclamar (preview)" que, al
- *   tocarlo, dispara la ráfaga central + cañones del reclamo. El botón solo
- *   aparece con ese query param (debug/desarrollo), no en producción.
+ * - **Modo dev** (`next dev`): siempre muestra el botón flotante "Reclamar
+ *   (preview)" para disparar la ráfaga central + cañones a demanda. No requiere
+ *   ninguna URL especial y no se ve afectado por el proxy de auth.
+ * - `?preview=reach` → además, dispara la ráfaga corta de cruce de meta al cargar.
  *
- * Renderiza `null` a menos que `preview=claim` esté activo. No toca la UI ni
- * el estado de puntos reales.
+ * En producción (`next build`/Vercel) no renderiza nada: el botón es solo de
+ * desarrollo y queda fuera del bundle de producción renderizado.
  */
 export function ConfettiPreview() {
   const [param] = useState<string | null | undefined>(() => {
@@ -27,11 +29,7 @@ export function ConfettiPreview() {
     if (param === 'reach') fireCelebration('reach')
   }, [param])
 
-  // `reach`: efímero, vuelve a renderizar null tras el disparo.
-  if (param === 'reach') return null
-
-  // `claim`: botón para ver la ráfaga del reclamo a demanda.
-  if (param !== 'claim') return null
+  if (!IS_DEV) return null
 
   return (
     <button

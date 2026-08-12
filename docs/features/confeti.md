@@ -45,17 +45,18 @@ Verdes de la planta + dorado del premio, definidos en `src/constants/confetti.ts
 
 ## Preview de debug (ver el confeti sin 700 pts)
 
-Para poder ver y ajustar la animación sin esperar una semana real de lecturas en rango, se agregó un preview efímero vía query param en la URL del dashboard:
+Para poder ver y ajustar la animación sin esperar una semana real de lecturas en rango, se agregó un preview de debug controlado por el entorno:
 
-| URL | Qué hace |
-|-----|----------|
-| `/?preview=reach` | Ráfaga corta de cruce de meta (`fireCelebration('reach')`), al cargar |
-| `/?preview=claim` | Muestra un **botón flotante "Reclamar (preview)"** a la derecha-abajo; al tocarlo dispara la ráfaga central + cañones (`fireCelebration('claim')`) |
+- **Modo dev (`next dev`)**: el componente `ConfettiPreview` muestra **siempre** un botón flotante "🎁 Reclamar (preview)" (abajo a la derecha) que dispara la ráfaga central + cañones del reclamo a demanda. No requiere URL especial ni se ve afectado por el proxy de auth.
+- `?preview=reach` → además, dispara la ráfaga corta de cruce de meta al cargar.
 
-- El botón solo aparece con `?preview=claim` (debug/desarrollo), no en producción. Renderiza `null` en cualquier otro caso.
-- El `reach` se dispara una vez al montar; el `claim` a demanda con el botón, para que puedas ver y ajustar la animación cuando quieras.
-- Es **intencionalmente efímero** y **no simula puntos reales**: deja intacto el estado de la meta (si no hay 700 pts reales, el botón *real* de reclamar del panel no aparece; este preview es solo el confeti).
-- Igual respeta `prefers-reduced-motion` (si el sistema pide movimiento reducido, no sale nada).
+| Entorno | El botón aparece |
+|---------|------------------|
+| Dev local (`npm run dev`) | Sí, siempre |
+| Producción (`next build` / Vercel) | **No** — el componente renderiza `null` |
+
+- Es **solo de desarrollo** (`process.env.NODE_ENV === 'development'`) y **no simula puntos reales**: deja intacto el estado de la meta (si no hay 700 pts reales, el botón *real* de reclamar del panel no aparece; este preview es solo el confeti).
+- Respeta `prefers-reduced-motion` (si el sistema pide movimiento reducido, no sale nada).
 
 ## Componentes / Archivos
 | Archivo | Responsabilidad |
