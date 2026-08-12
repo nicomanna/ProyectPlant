@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#16a34a",
+  themeColor: "#1a1d21",
   // La app se instala en el celular: sin esto, iOS deja una franja blanca
   // en los teléfonos con notch cuando corre en standalone.
   viewportFit: "cover",

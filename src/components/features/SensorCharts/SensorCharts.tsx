@@ -19,7 +19,7 @@ export function SensorCharts({ className = '' }: SensorChartsProps) {
           tarjeta. Cambiar el rango re-renderiza los cuatro gráficos. */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <div
-          className="flex gap-1 rounded-xl bg-white/70 p-1"
+          className="flex gap-1 rounded-xl bg-white/10 p-1"
           role="group"
           aria-label="Rango de tiempo"
         >
@@ -31,8 +31,8 @@ export function SensorCharts({ className = '' }: SensorChartsProps) {
               aria-pressed={range === key}
               className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                 range === key
-                  ? 'bg-green-600 text-white'
-                  : 'text-[#52514e] hover:bg-green-100'
+                  ? 'bg-emerald-500 text-emerald-950'
+                  : 'text-white/60 hover:bg-white/10'
               }`}
             >
               {HISTORY_RANGES[key].label}
@@ -43,7 +43,7 @@ export function SensorCharts({ className = '' }: SensorChartsProps) {
         <button
           type="button"
           onClick={() => setShowTable((current) => !current)}
-          className="flex items-center gap-1.5 rounded-xl bg-white/70 px-3 py-1.5 text-xs font-medium text-[#52514e] transition-colors hover:bg-green-100"
+          className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/15"
         >
           {showTable ? (
             <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -55,13 +55,13 @@ export function SensorCharts({ className = '' }: SensorChartsProps) {
       </div>
 
       {error && (
-        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">{error}</p>
+        <p className="rounded-2xl bg-red-500/15 px-4 py-3 text-sm text-red-300">{error}</p>
       )}
 
       {isLoading && !error && (
         <div className="grid gap-3 sm:grid-cols-2">
           {SENSOR_METRICS.map((metric) => (
-            <div key={metric} className="h-40 animate-pulse rounded-2xl bg-green-100" />
+            <div key={metric} className="glass h-40 animate-pulse rounded-2xl" />
           ))}
         </div>
       )}

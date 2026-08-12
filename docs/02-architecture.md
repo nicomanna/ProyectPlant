@@ -65,7 +65,7 @@ proyecto-plant/
 │   │                               #   plantHealth, points, history)
 │   ├── hooks/                      # Custom hooks (useSensorData, usePoints, useSensorHistory)
 │   ├── types/                      # Tipos globales / tipos de datos de Supabase
-│   ├── constants/                  # Constantes (sensors, points, charts, auth)
+│   ├── constants/                  # Constantes (sensors, points, charts, auth, orbs)
 │   └── services/                   # Capa de acceso a datos (sensor.service.ts, points.service.ts)
 ├── scripts/
 │   └── simulate-esp32.ts           # Script para simular el ESP32 sin hardware real

@@ -39,7 +39,7 @@ No aplica. La "salud" de la planta es un número `0..1` generado client-side (`u
 | `src/app/page.tsx` | Dashboard: centra `Plant3DViewer` mobile-first y le pasa el `health` simulado |
 
 ## UI / Pantallas
-`/` (dashboard): layout mobile-first, el viewer 3D ocupa el centro de la pantalla (la mayor parte del viewport), con un título breve y una pista de interacción ("Arrastrá para girar la planta"). Fondo cálido (`bg-green-50`), consistente con `/login`.
+`/` (dashboard): escena immersive glassmorphic 3D (ver `docs/features/ui-redesign-glassmorphism.md`). Fondo gris carbón con neblina volumétrica, la planta 3D centrada como foco, los 4 orbes de métricas orbitando alrededor y la meta semanal como panel `glass` flotante arriba a la derecha. Pista de interacción ("Arrastrá para girar la planta") arriba.
 
 ## Reacción a datos (simulados)
 `health` (0 a 1) afecta, sin reconstruir geometría:

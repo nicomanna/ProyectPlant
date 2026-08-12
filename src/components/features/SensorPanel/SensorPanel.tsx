@@ -2,7 +2,10 @@
 
 import { Droplets, Sun, Thermometer, Wind } from 'lucide-react'
 import { METRIC_LABELS, METRIC_UNITS, SENSOR_METRICS, type SensorMetric } from '@/constants/sensors'
-import { isMetricOptimal } from '@/lib/plantHealth'
+import { ORB_CONFIGS, type OrbPosition } from '@/constants/orbs'
+import { computeMetricHealth, isMetricOptimal } from '@/lib/plantHealth'
+import { orbColorFor, orbRingProgress } from '@/lib/orbColor'
+import { MetricOrb } from './MetricOrb'
 import type { SensorPanelProps } from './SensorPanel.types'
 
 const METRIC_ICONS = {
@@ -12,51 +15,66 @@ const METRIC_ICONS = {
   humidity: Wind,
 } as const satisfies Record<SensorMetric, typeof Droplets>
 
+const POSITION_CLASS: Record<OrbPosition, string> = {
+  top: 'left-1/2 top-[14%] -translate-x-1/2',
+  right: 'right-[7%] top-1/2 -translate-y-1/2',
+  bottom: 'left-1/2 bottom-[13%] -translate-x-1/2',
+  left: 'left-[7%] top-1/2 -translate-y-1/2',
+}
+
+const SIZE_CLASS = 'h-[22vw] max-h-24 min-h-16 w-[22vw] max-w-24 min-w-16 sm:h-24 sm:w-24 md:h-28 md:w-28'
+
 export function SensorPanel({ reading, isLoading, className = '' }: SensorPanelProps) {
   if (isLoading) {
     return (
-      <div className={`grid grid-cols-2 gap-3 ${className}`}>
-        {SENSOR_METRICS.map((metric) => (
-          <div key={metric} className="h-20 animate-pulse rounded-2xl bg-green-100" />
-        ))}
+      <div className={className}>
+        {SENSOR_METRICS.map((metric) => {
+          const { position, accent } = ORB_CONFIGS[metric]
+          return (
+            <div
+              key={metric}
+              className={`orb-body absolute h-[22vw] max-h-24 min-h-16 w-[22vw] max-w-24 min-w-16 animate-pulse rounded-full sm:h-24 sm:w-24 md:h-28 md:w-28 ${POSITION_CLASS[position]}`}
+              style={{ ['--orb-glow' as string]: accent }}
+            />
+          )
+        })}
       </div>
     )
   }
 
   if (!reading) {
     return (
-      <div className={`rounded-2xl bg-white/70 px-4 py-6 text-center ${className}`}>
-        <p className="text-sm text-gray-500">Todavía no hay lecturas del sensor</p>
+      <div className={`pointer-events-none flex items-center justify-center ${className}`}>
+        <p className="glass rounded-full px-5 py-3 text-sm text-white/70">
+          Todavía no hay lecturas del sensor
+        </p>
       </div>
     )
   }
 
   return (
-    <div className={`grid grid-cols-2 gap-3 ${className}`}>
+    <div className={`pointer-events-none ${className}`}>
       {SENSOR_METRICS.map((metric) => {
         const Icon = METRIC_ICONS[metric]
+        const { position, accent } = ORB_CONFIGS[metric]
         const value = reading[metric]
+        const health = computeMetricHealth(metric, value)
         const optimal = isMetricOptimal(metric, value)
 
         return (
-          <div key={metric} className="rounded-2xl bg-white/70 px-4 py-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Icon
-                className={`h-4 w-4 ${optimal ? 'text-green-600' : 'text-amber-600'}`}
-                aria-hidden="true"
-              />
-              <span className="text-xs text-gray-500">{METRIC_LABELS[metric]}</span>
-            </div>
-            <p className="mt-1 text-xl font-semibold text-gray-900">
-              {value.toFixed(1)}
-              <span className="ml-0.5 text-sm font-normal text-gray-500">
-                {METRIC_UNITS[metric]}
-              </span>
-            </p>
-            <p className={`text-xs ${optimal ? 'text-green-600' : 'text-amber-600'}`}>
-              {optimal ? 'En rango' : 'Fuera de rango'}
-            </p>
-          </div>
+          <MetricOrb
+            key={metric}
+            label={METRIC_LABELS[metric]}
+            value={value}
+            unit={METRIC_UNITS[metric]}
+            icon={Icon}
+            ringProgress={orbRingProgress(metric, value)}
+            glow={orbColorFor(metric, health)}
+            accent={accent}
+            optimal={optimal}
+            positionClass={POSITION_CLASS[position]}
+            sizeClass={SIZE_CLASS}
+          />
         )
       })}
     </div>

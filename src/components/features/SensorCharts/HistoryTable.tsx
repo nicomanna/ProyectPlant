@@ -15,18 +15,18 @@ export function HistoryTable({ points }: HistoryTableProps) {
 
   if (rows.length === 0) {
     return (
-      <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-[#898781]">
+      <p className="glass rounded-2xl px-4 py-6 text-center text-sm text-white/50">
         Sin datos en este rango
       </p>
     )
   }
 
   return (
-    <div className="max-h-80 overflow-auto rounded-2xl bg-white shadow-sm">
+    <div className="glass max-h-80 overflow-auto rounded-2xl">
       <table className="w-full text-left text-xs tabular-nums">
         <caption className="sr-only">Histórico de lecturas del sensor</caption>
-        <thead className="sticky top-0 bg-white">
-          <tr className="border-b border-[#e1e0d9] text-[#898781]">
+        <thead className="sticky top-0 bg-[#23272d]">
+          <tr className="border-b border-white/10 text-white/50">
             <th scope="col" className="px-3 py-2 font-medium">
               Momento
             </th>
@@ -40,12 +40,12 @@ export function HistoryTable({ points }: HistoryTableProps) {
         </thead>
         <tbody>
           {rows.map((point) => (
-            <tr key={point.t} className="border-b border-[#e1e0d9] last:border-0">
-              <th scope="row" className="px-3 py-1.5 font-normal text-[#52514e]">
+            <tr key={point.t} className="border-b border-white/10 last:border-0">
+              <th scope="row" className="px-3 py-1.5 font-normal text-white/70">
                 {formatBucketFull(point.t)}
               </th>
               {SENSOR_METRICS.map((metric) => (
-                <td key={metric} className="px-2 py-1.5 text-right text-[#0b0b0b]">
+                <td key={metric} className="px-2 py-1.5 text-right text-white">
                   {point[metric] === null ? '—' : point[metric]?.toFixed(1)}
                 </td>
               ))}

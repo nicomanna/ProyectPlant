@@ -51,6 +51,22 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     fill.position.set(-5, 3, -4)
     scene.add(fill)
 
+    // Luces coloreadas que reflejan los orbes del dashboard: cada una apunta
+    // hacia el follaje desde una dirección orbital distinta, bañando las hojas
+    // con el color de su métrica (cian arriba, dorado derecha, teal izquierda,
+    // naranja abajo). Intensidad baja: tinte, no paleta.
+    const orbLights = [
+      { color: 0x38bdf8, pos: [0, 4, 2] }, // Humedad sustrato — arriba
+      { color: 0xfbbf24, pos: [4, 1.5, 0.5] }, // Luz — derecha
+      { color: 0x2dd4bf, pos: [-4, 1.5, -0.5] }, // Humedad ambiente — izquierda
+      { color: 0xfb923c, pos: [0, -2, 2] }, // Temperatura — abajo
+    ] as const
+    orbLights.forEach(({ color, pos }) => {
+      const light = new THREE.PointLight(color, 1.1, 12)
+      light.position.set(pos[0], pos[1], pos[2])
+      scene.add(light)
+    })
+
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(200, 200),
       new THREE.ShadowMaterial({ opacity: 0.18 })

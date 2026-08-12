@@ -5,6 +5,46 @@
 
 ---
 
+## [0.10.0] — 2026-08-12
+
+### Changed — Rediseño Glassmorphic 3D inmersivo del dashboard
+
+#### Archivos afectados
+- `docs/features/ui-redesign-glassmorphism.md` — Doc de la feature (creado antes de codear)
+- `src/app/globals.css` — Fondo gris carbón `#1a1d21`, utilidades `glass`, `fog` y `orb-body`
+- `src/app/layout.tsx` — `themeColor` al carbón oscuro
+- `src/app/page.tsx` — Reescrito como escena inmersiva: planta al centro, orbes orbitando, meta flotante
+- `src/constants/orbs.ts` — Posición orbital y color accent base por métrica
+- `src/lib/orbColor.ts` — `orbColorFor()` (interpolación accent→ámbar→rojo) y `orbRingProgress()`
+- `src/components/features/SensorPanel/MetricOrb.tsx` — Orbe de cristal esmerilado con anillo de progreso SVG
+- `src/components/features/SensorPanel/SensorPanel.tsx` — Orquesta los 4 `MetricOrb` orbitando la planta
+- `src/components/features/WeeklyGoal/**` — Panel flotante glass superior derecho
+- `src/components/features/PlantAvatar/Plant3DViewer.tsx` — 4 luces puntuales coloreadas que reflejan los orbes en las hojas
+- `src/components/features/SensorCharts/**` — Gráficos y tabla adaptados al tema oscuro carbón
+- `docs/02-architecture.md`, `docs/features/dashboard.md` — Estructura y mención del rediseño
+
+### Descripción detallada
+Se reescribió la piel visual del dashboard siguiendo la skill `ui-ux-pro-max`: de tarjetas rectangulares a una **escena glassmorphic 3D inmersiva**. El fondo pasa a gris carbón `#1a1d21` con neblina volumétrica (`fog`), y la planta 3D se vuelve el foco central del viewport.
+
+Las cuatro métricas ya no son tarjetas bajo la planta: cada una es ahora un **orbe circular volumétrico de cristal esmerilado** (`MetricOrb`) que **orbita alrededor** del modelo 3D — Humedad de sustrato arriba (cian/azul `#38bdf8`), Luz a la derecha (dorado `#fbbf24`), Humedad ambiente a la izquierda (teal `#2dd4bf`) y Temperatura abajo (naranja `#fb923c`). Cada orbe tiene su propio fondo translúcido con `backdrop-blur` (la planta se ve a través), un **anillo de progreso SVG** proporcional al valor dentro del rango físico, y un `box-shadow` de resplandor interno cuyo color **interpola dinámicamente** desde el accent base del orbe hacia ámbar y luego rojo conforme la métrica se aleja de su rango óptimo (`orbColorFor`, usando `computeMetricHealth`).
+
+La **Meta Semanal** pasó a ser un panel flotante *glass* en la parte superior derecha, y los gráficos históricos + la vista de tabla se adaptaron al fondo oscuro (marcos/textos re-expresados en tonos claros; la serie conserva el hue validado por `dataviz` — no se tocó `src/constants/charts.ts`).
+
+En el modelo 3D se agregaron **4 luces puntuales coloreadas** (cian/dorado/teal/naranja) apuntando al follaje desde cada dirección orbital, para que las hojas reflejen los colores de los orbes y se integre la luz volumétrica de la escena.
+
+### Decisiones / restricciones
+- **Sin librerías nuevas**: el anillo de progreso es SVG puro (Mandamiento I). Sin `framer-motion` ni chart libs extra.
+- Cambio **estrictamente visual**: no toca lógica de datos, hooks, servicios ni APIs. Los contratos de props de `SensorPanel`, `WeeklyGoal` y `Plant3DViewer` no cambiaron.
+- **`dataviz`**: los gráficos preservan la paleta validada (`CHART_COLORS.series` intacto); solo las superficies/marcos se oscurecieron a mano en los componentes. No se re-corrió el validador porque no se cambió ningún hue de la paleta dataviz.
+
+### Verificación
+`npm run build` pasa sin errores de TypeScript ni de lint.
+
+### Request original
+> Reescribir el diseño del Dashboard (UI) para implementar una interfaz inmersiva, oscura y con estética "Glassmorphic 3D", centrando la planta y rodeándola de widgets circulares transparentes y flotantes, basándonos en la arquitectura de datos actual.
+
+---
+
 ## [0.9.1] — 2026-08-12
 
 ### Fixed

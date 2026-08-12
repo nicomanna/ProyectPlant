@@ -23,29 +23,48 @@ export default function DashboardPage() {
   }, [claim])
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-1 bg-green-50 px-4 py-8">
-      <h1 className="text-lg font-semibold text-gray-900">Plant Tamagotchi</h1>
-      <p className="text-sm text-gray-500">Arrastrá para girar la planta</p>
+    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground">
+      {/* Neblina volumétrica de fondo */}
+      <div className="fog pointer-events-none absolute inset-0" aria-hidden="true" />
 
-      <Plant3DViewer health={health} className="mt-2 h-[40vh] w-full max-w-md" />
+      {/* Escena inmersiva: la planta es el foco, los orbes orbitan alrededor */}
+      <section className="relative z-10 flex flex-col items-center">
+        <div className="mt-4 flex w-full items-center justify-between px-5">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">Plant Tamagotchi</h1>
+            <p className="text-sm text-white/50">Arrastrá para girar la planta</p>
+          </div>
+          <WeeklyGoal
+            points={points}
+            isLoading={pointsLoading}
+            isClaiming={isClaiming}
+            onClaim={handleClaim}
+            className="w-64"
+          />
+        </div>
+      </section>
+
+      {/* Stage de la planta + orbes ornamentales */}
+      <section className="relative z-10 min-h-[62vh] flex-1">
+        <Plant3DViewer
+          health={health}
+          className="absolute inset-0 h-full w-full"
+        />
+        <SensorPanel
+          reading={reading}
+          isLoading={sensorsLoading}
+          className="absolute inset-0"
+        />
+      </section>
 
       {sensorsError && (
-        <p className="mt-2 rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-700">
+        <p className="relative z-10 mx-5 mb-2 rounded-xl bg-red-500/15 px-4 py-2 text-center text-sm text-red-300">
           {sensorsError}
         </p>
       )}
 
-      <WeeklyGoal
-        points={points}
-        isLoading={pointsLoading}
-        isClaiming={isClaiming}
-        onClaim={handleClaim}
-        className="mt-4 w-full max-w-md"
-      />
-
-      <SensorPanel reading={reading} isLoading={sensorsLoading} className="mt-3 w-full max-w-md" />
-
-      <SensorCharts className="mt-6 w-full max-w-md" />
+      {/* Gráficos históricos al pie, fuera del pliegue inmersivo */}
+      <SensorCharts className="relative z-10 mx-5 mb-6 w-[calc(100%-2.5rem)] max-w-5xl self-center" />
     </main>
   )
 }

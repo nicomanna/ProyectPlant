@@ -29,6 +29,18 @@ const METRIC_ICONS = {
   humidity: Wind,
 } as const satisfies Record<SensorMetric, typeof Droplets>
 
+// Tokens re-expresados para fondo oscuro carbón. La serie conserva el hue
+// validado por la skill `dataviz` (`CHART_COLORS.series`); solo los hues de
+// marco/tinta cambian a tonos claros legibles sobre el vidrio oscuro.
+const DARK = {
+  card: 'rgba(255,255,255,0.06)',
+  grid: 'rgba(255,255,255,0.10)',
+  axis: 'rgba(255,255,255,0.22)',
+  muted: '#b6bdc7',
+  ink: '#e8eaed',
+  surface: '#23272d',
+}
+
 /**
  * El dominio del eje Y siempre incluye la banda óptima completa, incluso si los
  * datos nunca la tocaron: si no, la banda queda fuera de cuadro y el gráfico
@@ -55,22 +67,22 @@ export function MetricChart({ metric, points, range }: MetricChartProps) {
   const lastValue = lastPoint ? lastPoint[metric] : null
 
   return (
-    <section className="rounded-2xl bg-white px-3 pt-3 pb-1 shadow-sm">
+    <section className="glass rounded-2xl px-3 pt-3 pb-1">
       <header className="flex items-baseline justify-between px-1">
         <div className="flex items-center gap-1.5">
-          <Icon className="h-3.5 w-3.5 text-[#898781]" aria-hidden="true" />
-          <h3 className="text-xs font-medium text-[#52514e]">{METRIC_LABELS[metric]}</h3>
+          <Icon className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+          <h3 className="text-xs font-medium text-white/80">{METRIC_LABELS[metric]}</h3>
         </div>
         {lastValue !== null && (
-          <p className="text-sm font-semibold text-[#0b0b0b]">
+          <p className="text-sm font-semibold text-white">
             {lastValue.toFixed(1)}
-            <span className="ml-0.5 text-xs font-normal text-[#898781]">{unit}</span>
+            <span className="ml-0.5 text-xs font-normal text-white/40">{unit}</span>
           </p>
         )}
       </header>
 
       {values.length === 0 ? (
-        <p className="py-10 text-center text-xs text-[#898781]">Sin datos en este rango</p>
+        <p className="py-10 text-center text-xs text-white/40">Sin datos en este rango</p>
       ) : (
         // El alto incluye la banda del eje X, así la tarjeta no genera
         // un scroll vertical interno.
@@ -86,7 +98,7 @@ export function MetricChart({ metric, points, range }: MetricChartProps) {
             />
 
             {/* Grilla hairline sólida, solo horizontal, recesiva. */}
-            <CartesianGrid vertical={false} stroke={CHART_COLORS.grid} strokeWidth={1} />
+            <CartesianGrid vertical={false} stroke={DARK.grid} strokeWidth={1} />
 
             <XAxis
               dataKey="t"
@@ -95,32 +107,32 @@ export function MetricChart({ metric, points, range }: MetricChartProps) {
               domain={['dataMin', 'dataMax']}
               tickCount={4}
               tickFormatter={(value: number) => formatBucketTick(value, range)}
-              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
-              stroke={CHART_COLORS.axis}
+              tick={{ fill: DARK.muted, fontSize: 10 }}
+              stroke={DARK.axis}
               tickLine={false}
             />
 
             <YAxis
               domain={computeDomain(values, optimalMin, optimalMax)}
               tickCount={3}
-              tick={{ fill: CHART_COLORS.muted, fontSize: 10 }}
-              stroke={CHART_COLORS.axis}
+              tick={{ fill: DARK.muted, fontSize: 10 }}
+              stroke={DARK.axis}
               tickLine={false}
               width={44}
             />
 
             <Tooltip
-              cursor={{ stroke: CHART_COLORS.axis, strokeWidth: 1 }}
+              cursor={{ stroke: DARK.axis, strokeWidth: 1 }}
               contentStyle={{
                 borderRadius: 12,
-                border: `1px solid ${CHART_COLORS.grid}`,
-                background: CHART_COLORS.surface,
-                boxShadow: '0 2px 8px rgba(11,11,11,0.08)',
+                border: `1px solid ${DARK.grid}`,
+                background: DARK.surface,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 fontSize: 12,
                 padding: '6px 10px',
               }}
-              labelStyle={{ color: CHART_COLORS.muted, fontSize: 11 }}
-              itemStyle={{ color: CHART_COLORS.ink }}
+              labelStyle={{ color: DARK.muted, fontSize: 11 }}
+              itemStyle={{ color: DARK.ink }}
               labelFormatter={(value) => formatBucketFull(Number(value))}
               formatter={(value) => [`${Number(value).toFixed(1)} ${unit}`, METRIC_LABELS[metric]]}
             />
