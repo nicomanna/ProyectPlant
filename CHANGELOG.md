@@ -5,6 +5,33 @@
 
 ---
 
+## [0.10.2] — 2026-08-12
+
+### Changed — Visor 3D interactivo con pose inicial fija y zoom restringido
+
+#### Archivos afectados
+- `src/components/features/PlantAvatar/Plant3DViewer.tsx` — Pose inicial centrada, OrbitControls con límites
+- `src/app/page.tsx` — Hint restaurado ("Arrastrá para girar la planta")
+- `docs/features/ui-redesign-glassmorphism.md` — Sección "Visor 3D — interactivo con pose inicial fija y límites restringidos"
+- `docs/features/dashboard.md` — Flujo y UI del dashboard actualizados
+
+### Descripción detallada
+Se restablece la interactividad del visor 3D, pero con límites que preservan la composición del HUD glassmorphic.
+
+**Pose inicial:** el modelo se centra por `bounding sphere`, la cámara se coloca de frente a la cara de la maceta (eje `+z`, ligeramente por encima del centro de la esfera) con una distancia derivada del `fov` (`dist = (radius / tan(fov/2)) * 1.15`), y `controls.target` queda en el centro de la esfera para pivotear la rotación ahí. Se usa `SCALE_MARGIN = 0.45` para definir las bandas de distancia.
+
+**Límites:** `enableRotate = true` (rotación libre), `enableZoom = true` con `minDistance = dist * 0.55` y `maxDistance = dist * 1.45` (un rango estrecho alrededor de la distancia inicial, imposible de romper), `enablePan = false` (la planta no se sale del centro) y `autoRotate = false`. Se mantiene `enableDamping` para rotación suave y el reajuste de `aspect` en `ResizeObserver`.
+
+El hint del dashboard vuelve a "Arrastrá para girar la planta".
+
+### Verificación
+`npm run build` sin errores de TypeScript ni de lint.
+
+### Request original
+> Ajustar el visor 3D para que sea interactivo con pose inicial fija y límites de zoom restringidos.
+
+---
+
 ## [0.10.1] — 2026-08-12
 
 ### Changed — Cámara del visor 3D fija y centrada

@@ -68,15 +68,17 @@ Se agregaron **4 luces puntuales de color** alrededor del modelo (cian arriba, d
 | `src/app/globals.css` | Tema oscuro carbón + utilidades `glass`/`orb` |
 | `src/app/page.tsx` | Escena inmersiva (stage + orbes + meta flotante) |
 
-## Visor 3D — cámara fija y centrada
+## Visor 3D — interactivo con pose inicial fija y límites restringidos
 
-La cámara del visor (`Plant3DViewer`) quedó **inmovilizada y centrada permanentemente** para mantener la cohesión del diseño HUD:
+El visor (`Plant3DViewer`) quedó **interactivo pero con límites**, para permitir girar la planta mientras se conserva la composición del HUD:
 
-- **Encuadre justo**: en el primer render se calcula el `bounding sphere` del modelo y se posiciona la cámara a una distancia derivada del `fov` (`dist = (radius / tan(fov/2)) * 1.15`) mirando al centro del `sphere`, para que la planta ocupe el tamaño justo y óptimo dentro del espacio central del dashboard — sin cortarse ni quedar pequeña.
-- **Fija**: se elimina `OrbitControls` y la auto-rotación (turntable). El usuario **ya no puede rotar, hacer zoom ni mover** la planta; la vista queda estática, coherente con los orbes orbitales del HUD que la rodean.
-- **Redimensionado**: solo se reajusta el `aspect` de la cámara al cambiar el tamaño del contenedor (`ResizeObserver`); la posición/encuadre no cambia.
+- **Pose inicial fija**: al cargar, se centra el modelo por `bounding sphere` y la cámara se coloca de frente a la cara de la maceta (`+z`), con la distancia derivada del `fov` (`dist = (radius / tan(fov/2)) * 1.15`) para un tamaño ideal respecto a los widgets. `controls.target` queda en el centro de la esfera.
+- **Rotación libre** (`enableRotate = true`): el usuario puede girar la planta libremente en cualquier eje.
+- **Zoom restringido** (`enableZoom = true`): `minDistance` y `maxDistance` limitados a un rango **muy estrecho** (distancia inicial ± `SCALE_MARGIN = 0.45`), de modo que no se pueda alejar/acercar la planta lo suficiente como para romper la composición.
+- **Sin pan** (`enablePan = false`): la planta no puede salirse del centro de la pantalla.
+- `autoRotate` desactivado; se conserva `enableDamping` para una rotación suave y el reajuste de `aspect` al redimensionar.
 
-El hint del dashboard se actualizó de "Arrastrá para girar la planta" a "Estado en vivo de tu planta".
+El hint del dashboard vuelve a indicar "Arrastrá para girar la planta".
 
 ## Responsividad
 - Mobile-first: Juego `dvh` para el viewport; los orbes son compactos (`w-20 h-20` aprox.) y orbitan cerca de la planta, sin desbordar el ancho (`max-w-[min(92vw,...)]`).

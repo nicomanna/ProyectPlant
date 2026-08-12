@@ -2,8 +2,15 @@
 
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { buildPottedPothos, applyPlantHealth } from './plantModel'
 import type { Plant3DViewerProps } from './Plant3DViewer.types'
+
+const FOV = 45
+// Bandas de zoom restringidas: un rango muy estrecho alrededor de la distancia
+// inicial de la cámara. El usuario puede rotar, pero no alejar/acercar la planta
+// lo suficiente como para romper la composición del HUD.
+const SCALE_MARGIN = 0.45
 
 export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -27,13 +34,7 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     container.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-
-    // Cámara fija: el encuadre se vuelve a calcular solo una vez (primer render),
-    // centrando la maceta por bounding sphere y ajustando la distancia para que la
-    // planta ocupe el tamaño justo. Sin OrbitControls ni auto-rotación: la vista
-    // queda estática para respetar el HUD glassmorphic de orbes orbitales.
-    const fov = 45
-    const camera = new THREE.PerspectiveCamera(fov, 1, 0.01, 500)
+    const camera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 500)
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2c4, 1.0))
     const key = new THREE.DirectionalLight(0xffffff, 2.2)
@@ -81,19 +82,33 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     scene.add(model)
     modelRef.current = model
 
-    // Encuadre justo y centrado, calculado una sola vez (cámara fija).
-    // La distancia se deriva del fov y del bounding sphere para que la planta
-    // ocupe el tamaño justo sin cortarse ni quedar pequeña.
+    // POSE INICIAL: se centra el modelo por bounding sphere y se posiciona la
+    // cámara frente a la cara de la maceta (eje +z), con la distancia derivada
+    // del fov para un tamaño ideal respecto a los widgets. `controls.target`
+    // queda en el centro de la esfera para que la rotación pivotee ahí.
     const box = new THREE.Box3().setFromObject(model)
     const sphere = box.getBoundingSphere(new THREE.Sphere())
-    const dist = (sphere.radius / Math.tan((fov * Math.PI) / 360)) * 1.15
-    const dir = new THREE.Vector3(1, 0.6, 1.35).normalize()
-    camera.position.copy(sphere.center).add(dir.multiplyScalar(dist))
-    camera.lookAt(sphere.center)
+    const center = sphere.center
+    const dist = (sphere.radius / Math.tan((FOV * Math.PI) / 360)) * 1.15
+    camera.position.set(center.x, center.y + sphere.radius * 0.35, center.z + dist)
+    camera.lookAt(center)
     camera.near = 0.05
     camera.far = 100
     camera.updateProjectionMatrix()
     ground.position.y = box.min.y
+
+    // INTERACTIVIDAD: rotación libre, zoom muy restringido, sin pan.
+    const controls = new OrbitControls(camera, renderer.domElement)
+    controls.target.copy(center)
+    controls.enableDamping = true
+    controls.dampingFactor = 0.08
+    controls.enableRotate = true
+    controls.enableZoom = true
+    controls.zoomToCursor = false
+    controls.minDistance = dist * (1 - SCALE_MARGIN)
+    controls.maxDistance = dist * (1 + SCALE_MARGIN)
+    controls.enablePan = false
+    controls.autoRotate = false
 
     const span = sphere.radius * 3
     key.shadow.camera.left = -span
@@ -114,12 +129,14 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     resizeObserver.observe(container)
 
     renderer.setAnimationLoop(() => {
+      controls.update()
       renderer.render(scene, camera)
     })
 
     return () => {
       renderer.setAnimationLoop(null)
       resizeObserver.disconnect()
+      controls.dispose()
       renderer.dispose()
       container.removeChild(renderer.domElement)
       modelRef.current = null
@@ -139,7 +156,7 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
       ref={containerRef}
       className={className ?? 'h-full w-full'}
       role="img"
-      aria-label="Modelo 3D de la planta"
+      aria-label="Modelo 3D de la planta, se puede girar arrastrando"
     />
   )
 }

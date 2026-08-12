@@ -32,7 +32,7 @@ export default function DashboardPage() {
         <div className="mt-4 flex w-full items-center justify-between px-5">
           <div>
             <h1 className="text-lg font-semibold text-foreground">Plant Tamagotchi</h1>
-            <p className="text-sm text-white/50">Estado en vivo de tu planta</p>
+            <p className="text-sm text-white/50">Arrastrá para girar la planta</p>
           </div>
           <WeeklyGoal
             points={points}
