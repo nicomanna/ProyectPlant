@@ -47,14 +47,15 @@ Verdes de la planta + dorado del premio, definidos en `src/constants/confetti.ts
 
 Para poder ver y ajustar la animación sin esperar una semana real de lecturas en rango, se agregó un preview efímero vía query param en la URL del dashboard:
 
-| URL | Qué dispara |
-|-----|-------------|
-| `/?preview=reach` | Ráfaga corta de cruce de meta (`fireCelebration('reach')`) |
-| `/?preview=claim` | Ráfaga central + cañones del reclamo (`fireCelebration('claim')`) |
+| URL | Qué hace |
+|-----|----------|
+| `/?preview=reach` | Ráfaga corta de cruce de meta (`fireCelebration('reach')`), al cargar |
+| `/?preview=claim` | Muestra un **botón flotante "Reclamar (preview)"** a la derecha-abajo; al tocarlo dispara la ráfaga central + cañones (`fireCelebration('claim')`) |
 
-- Lo hace el componente `ConfettiPreview`, que lee `window.location.search` una sola vez al montar y renderiza `null` (no toca la UI ni el estado de puntos).
-- Es **intencionalmente efímero**: al quitar el query de la URL, ya no se dispara. Igual respeta `prefers-reduced-motion` (si el sistema pide movimiento reducido, no sale nada).
-- Solo debug/desarrollo: no hay botón visible ni depende de alcanzar los 700 puntos.
+- El botón solo aparece con `?preview=claim` (debug/desarrollo), no en producción. Renderiza `null` en cualquier otro caso.
+- El `reach` se dispara una vez al montar; el `claim` a demanda con el botón, para que puedas ver y ajustar la animación cuando quieras.
+- Es **intencionalmente efímero** y **no simula puntos reales**: deja intacto el estado de la meta (si no hay 700 pts reales, el botón *real* de reclamar del panel no aparece; este preview es solo el confeti).
+- Igual respeta `prefers-reduced-motion` (si el sistema pide movimiento reducido, no sale nada).
 
 ## Componentes / Archivos
 | Archivo | Responsabilidad |

@@ -5,6 +5,27 @@
 
 ---
 
+## [0.10.4] — 2026-08-12
+
+### Changed — Preview del confeti: botón "Reclamar (preview)" con `?preview=claim`
+
+#### Archivos afectados
+- `src/components/features/ConfettiPreview/ConfettiPreview.tsx` — Botón flotante que dispara el confeti de reclamo a demanda
+- `docs/features/confeti.md` — Actualizada la sección de preview
+
+### Descripción detallada
+A pedido del usuario, el preview deja de disparar el confeti de reclamo solo en automático y pasa a ofrecer un **botón flotante "Reclamar (preview)"** cuando el query `?preview=claim` está presente. Al tocarlo dispara `fireCelebration('claim')` (ráfaga central + cañones) sin depender de 700 pts reales.
+
+El `?preview=reach` conserva el disparo efímero al cargar. El componente solo renderiza el botón en `?preview=claim` y es `null` en cualquier otro caso (no afecta producción). No simula puntos: el estado real de la meta queda intacto.
+
+### Verificación
+`npm run build` sin errores de TypeScript ni de lint.
+
+### Request original
+> no me aparece nada para reclamar → quiere un botón de reclamar en el dashboard para ver el preview.
+
+---
+
 ## [0.10.3] — 2026-08-12
 
 ### Added — Preview de debug del confeti (`?preview=claim|reach`)
