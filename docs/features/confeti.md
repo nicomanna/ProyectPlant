@@ -43,13 +43,27 @@ Verdes de la planta + dorado del premio, definidos en `src/constants/confetti.ts
 3. Toca el botón → `POST /api/points/claim`.
 4. Si responde OK → confeti largo y el componente pasa a mostrar el mensaje de premio reclamado.
 
+## Preview de debug (ver el confeti sin 700 pts)
+
+Para poder ver y ajustar la animación sin esperar una semana real de lecturas en rango, se agregó un preview efímero vía query param en la URL del dashboard:
+
+| URL | Qué dispara |
+|-----|-------------|
+| `/?preview=reach` | Ráfaga corta de cruce de meta (`fireCelebration('reach')`) |
+| `/?preview=claim` | Ráfaga central + cañones del reclamo (`fireCelebration('claim')`) |
+
+- Lo hace el componente `ConfettiPreview`, que lee `window.location.search` una sola vez al montar y renderiza `null` (no toca la UI ni el estado de puntos).
+- Es **intencionalmente efímero**: al quitar el query de la URL, ya no se dispara. Igual respeta `prefers-reduced-motion` (si el sistema pide movimiento reducido, no sale nada).
+- Solo debug/desarrollo: no hay botón visible ni depende de alcanzar los 700 puntos.
+
 ## Componentes / Archivos
 | Archivo | Responsabilidad |
 |---------|----------------|
 | `src/constants/confetti.ts` | Colores, duración y forma de cada ráfaga |
 | `src/lib/confetti.ts` | `fireCelebration(kind)` — import dinámico, guarda de reduced-motion |
 | `src/hooks/useCelebration.ts` | Detecta la transición `false → true` de `goalReached` |
-| `src/app/page.tsx` | Encadena `claim()` → `fireCelebration('claim')` |
+| `src/components/features/ConfettiPreview/**` | Dispara el confeti de debug según `?preview=reach|claim` |
+| `src/app/page.tsx` | Encadena `claim()` → `fireCelebration('claim')` + monta `ConfettiPreview` |
 
 ## Restricciones
 - No agrega tablas, migraciones ni endpoints.

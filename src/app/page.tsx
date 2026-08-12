@@ -1,6 +1,7 @@
 'use client'
 
 import { Plant3DViewer } from '@/components/features/PlantAvatar'
+import { ConfettiPreview } from '@/components/features/ConfettiPreview'
 import { SensorCharts } from '@/components/features/SensorCharts'
 import { SensorPanel } from '@/components/features/SensorPanel'
 import { WeeklyGoal } from '@/components/features/WeeklyGoal'
@@ -24,6 +25,9 @@ export default function DashboardPage() {
 
   return (
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground">
+      {/* Preview de debug del confeti: /?preview=claim o /?preview=reach */}
+      <ConfettiPreview />
+
       {/* Neblina volumétrica de fondo */}
       <div className="fog pointer-events-none absolute inset-0" aria-hidden="true" />
 

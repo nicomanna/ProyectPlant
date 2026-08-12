@@ -60,7 +60,8 @@ proyecto-plant/
 │   │       ├── SensorPanel/        # Grilla con las 4 métricas actuales
 │   │       ├── WeeklyGoal/         # Barra de progreso + botón de premio
 │   │       ├── SensorCharts/       # Gráficos históricos (recharts) + vista de tabla
-│   │       └── PWA/                # Registro del service worker
+│   │       ├── PWA/                # Registro del service worker
+│   │       └── ConfettiPreview/    # Preview de debug del confeti (?preview=reach|claim)
 │   ├── lib/                        # Utilidades y lógica pura (supabase, apiAuth, session,
 │   │                               #   plantHealth, points, history)
 │   ├── hooks/                      # Custom hooks (useSensorData, usePoints, useSensorHistory)

@@ -5,6 +5,32 @@
 
 ---
 
+## [0.10.3] — 2026-08-12
+
+### Added — Preview de debug del confeti (`?preview=claim|reach`)
+
+#### Archivos afectados
+- `src/components/features/ConfettiPreview/**` — Componente que dispara el confeti según el query param
+- `src/app/page.tsx` — Monta `ConfettiPreview` en el dashboard
+- `docs/features/confeti.md` — Sección "Preview de debug (ver el confeti sin 700 pts)"
+- `docs/02-architecture.md` — Estructura actualizada con la carpeta `ConfettiPreview/`
+
+### Descripción detallada
+Para poder ver y ajustar la animación del premio **sin esperar acumular 700 puntos reales** en una semana, se agregó un preview efímero vía query param:
+
+- `/?preview=reach` → dispara la ráfaga corta de cruce de meta.
+- `/?preview=claim` → dispara la ráfaga central + cañones del reclamo.
+
+Lo implementa `ConfettiPreview`, un componente de cliente que lee `window.location.search` una sola vez al montar y renderiza `null` (no altera la UI ni el estado de puntos). Es efímero —al quitar el query deja de dispararse— y respeta `prefers-reduced-motion` como el resto de la animación. Integra el tipo existente `CelebrationKind` de `src/lib/confetti.ts` (sin cambios en `fireCelebration` ni en la lógica de celebración real).
+
+### Verificación
+`npm run build` sin errores de TypeScript ni de lint.
+
+### Request original
+> ¿Dónde veo la simulación del premio? → agregar un preview de debug para verlo.
+
+---
+
 ## [0.10.2] — 2026-08-12
 
 ### Changed — Visor 3D interactivo con pose inicial fija y zoom restringido
