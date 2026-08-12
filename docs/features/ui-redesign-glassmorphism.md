@@ -68,6 +68,16 @@ Se agregaron **4 luces puntuales de color** alrededor del modelo (cian arriba, d
 | `src/app/globals.css` | Tema oscuro carbón + utilidades `glass`/`orb` |
 | `src/app/page.tsx` | Escena inmersiva (stage + orbes + meta flotante) |
 
+## Visor 3D — cámara fija y centrada
+
+La cámara del visor (`Plant3DViewer`) quedó **inmovilizada y centrada permanentemente** para mantener la cohesión del diseño HUD:
+
+- **Encuadre justo**: en el primer render se calcula el `bounding sphere` del modelo y se posiciona la cámara a una distancia derivada del `fov` (`dist = (radius / tan(fov/2)) * 1.15`) mirando al centro del `sphere`, para que la planta ocupe el tamaño justo y óptimo dentro del espacio central del dashboard — sin cortarse ni quedar pequeña.
+- **Fija**: se elimina `OrbitControls` y la auto-rotación (turntable). El usuario **ya no puede rotar, hacer zoom ni mover** la planta; la vista queda estática, coherente con los orbes orbitales del HUD que la rodean.
+- **Redimensionado**: solo se reajusta el `aspect` de la cámara al cambiar el tamaño del contenedor (`ResizeObserver`); la posición/encuadre no cambia.
+
+El hint del dashboard se actualizó de "Arrastrá para girar la planta" a "Estado en vivo de tu planta".
+
 ## Responsividad
 - Mobile-first: Juego `dvh` para el viewport; los orbes son compactos (`w-20 h-20` aprox.) y orbitan cerca de la planta, sin desbordar el ancho (`max-w-[min(92vw,...)]`).
 - En pantallas medianas/grandes los orbes crecen (`sm:`/`md:`) y se alejan del centro.

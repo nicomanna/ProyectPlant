@@ -25,7 +25,7 @@ No aplica. La "salud" de la planta es un número `0..1` generado client-side (`u
 ## Flujo de Uso
 1. La usuaria entra a `/` (ya autenticada, protegida por `src/proxy.ts`).
 2. Se monta `Plant3DViewer`: crea renderer, cámara, luces, controles de órbita, y construye el modelo 3D una sola vez.
-3. Auto-rotación (turntable) hasta el primer gesto del usuario; a partir de ahí, control manual (arrastrar = orbitar, pellizcar/scroll = zoom).
+3. Cámara fija: el encuadre se centra por bounding sphere una única vez y la vista queda estática (sin `OrbitControls` ni auto-rotación), para que la planta ocupe el tamaño justo y los orbes orbitales conserven su lugar en el HUD.
 4. `useSimulatedPlantHealth` actualiza un valor de salud cada pocos segundos (placeholder); el viewer aplica ese valor al modelo sin reconstruir la geometría (tinte de hojas y tierra, y una ligera contracción del follaje si la salud baja).
 
 ## Componentes / Archivos
@@ -39,7 +39,7 @@ No aplica. La "salud" de la planta es un número `0..1` generado client-side (`u
 | `src/app/page.tsx` | Dashboard: centra `Plant3DViewer` mobile-first y le pasa el `health` simulado |
 
 ## UI / Pantallas
-`/` (dashboard): escena immersive glassmorphic 3D (ver `docs/features/ui-redesign-glassmorphism.md`). Fondo gris carbón con neblina volumétrica, la planta 3D centrada como foco, los 4 orbes de métricas orbitando alrededor y la meta semanal como panel `glass` flotante arriba a la derecha. Pista de interacción ("Arrastrá para girar la planta") arriba.
+`/` (dashboard): escena immersive glassmorphic 3D (ver `docs/features/ui-redesign-glassmorphism.md`). Fondo gris carbón con neblina volumétrica, la planta 3D centrada como foco (cámara **fija**, sin controles de usuario), los 4 orbes de métricas orbitando alrededor y la meta semanal como panel `glass` flotante arriba a la derecha. Pista "Estado en vivo de tu planta" arriba.
 
 ## Reacción a datos (simulados)
 `health` (0 a 1) afecta, sin reconstruir geometría:

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { buildPottedPothos, applyPlantHealth } from './plantModel'
 import type { Plant3DViewerProps } from './Plant3DViewer.types'
 
@@ -28,17 +27,13 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     container.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 500)
-    camera.position.set(3, 2.2, 4)
 
-    const controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableDamping = true
-    controls.dampingFactor = 0.08
-    controls.autoRotate = true
-    controls.autoRotateSpeed = 1.2
-    controls.addEventListener('start', () => {
-      controls.autoRotate = false
-    })
+    // Cámara fija: el encuadre se vuelve a calcular solo una vez (primer render),
+    // centrando la maceta por bounding sphere y ajustando la distancia para que la
+    // planta ocupe el tamaño justo. Sin OrbitControls ni auto-rotación: la vista
+    // queda estática para respetar el HUD glassmorphic de orbes orbitales.
+    const fov = 45
+    const camera = new THREE.PerspectiveCamera(fov, 1, 0.01, 500)
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2c4, 1.0))
     const key = new THREE.DirectionalLight(0xffffff, 2.2)
@@ -86,16 +81,18 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     scene.add(model)
     modelRef.current = model
 
+    // Encuadre justo y centrado, calculado una sola vez (cámara fija).
+    // La distancia se deriva del fov y del bounding sphere para que la planta
+    // ocupe el tamaño justo sin cortarse ni quedar pequeña.
     const box = new THREE.Box3().setFromObject(model)
     const sphere = box.getBoundingSphere(new THREE.Sphere())
-    const dist = (sphere.radius / Math.tan((camera.fov * Math.PI) / 360)) * 1.35
-    const dir = new THREE.Vector3(1, 0.55, 1.25).normalize()
+    const dist = (sphere.radius / Math.tan((fov * Math.PI) / 360)) * 1.15
+    const dir = new THREE.Vector3(1, 0.6, 1.35).normalize()
     camera.position.copy(sphere.center).add(dir.multiplyScalar(dist))
-    camera.near = Math.max(dist / 100, 0.01)
-    camera.far = dist * 100
+    camera.lookAt(sphere.center)
+    camera.near = 0.05
+    camera.far = 100
     camera.updateProjectionMatrix()
-    controls.target.copy(sphere.center)
-    controls.update()
     ground.position.y = box.min.y
 
     const span = sphere.radius * 3
@@ -117,14 +114,12 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
     resizeObserver.observe(container)
 
     renderer.setAnimationLoop(() => {
-      controls.update()
       renderer.render(scene, camera)
     })
 
     return () => {
       renderer.setAnimationLoop(null)
       resizeObserver.disconnect()
-      controls.dispose()
       renderer.dispose()
       container.removeChild(renderer.domElement)
       modelRef.current = null
@@ -144,7 +139,7 @@ export function Plant3DViewer({ health = 1, className }: Plant3DViewerProps) {
       ref={containerRef}
       className={className ?? 'h-full w-full'}
       role="img"
-      aria-label="Modelo 3D de la planta, se puede girar arrastrando"
+      aria-label="Modelo 3D de la planta"
     />
   )
 }

@@ -5,6 +5,29 @@
 
 ---
 
+## [0.10.1] — 2026-08-12
+
+### Changed — Cámara del visor 3D fija y centrada
+
+#### Archivos afectados
+- `src/components/features/PlantAvatar/Plant3DViewer.tsx` — Cámara fija, sin `OrbitControls` ni auto-rotación
+- `src/app/page.tsx` — Hint del dashboard actualizado ("Estado en vivo de tu planta")
+- `docs/features/ui-redesign-glassmorphism.md` — Sección "Visor 3D — cámara fija y centrada"
+- `docs/features/dashboard.md` — Flujo y UI del dashboard actualizados
+
+### Descripción detallada
+Se inmovilizó la cámara del visor 3D para respetar la cohesión del HUD glassmorphic: la maceta queda **perfectamente centrada y con el tamaño justo** al abrir, y ya no se puede rotar ni hacer zoom.
+
+El encuadre se calcula **una sola vez** en el primer render a partir del `bounding sphere` del modelo: la distancia se deriva del `fov` (`dist = (radius / tan(fov/2)) * 1.15`) y la cámara mira al centro de la esfera. Se eliminó `OrbitControls` (import, instancia y el loop de `controls.update()`) y la auto-rotación turntable. Solo se conserva el reajuste de `aspect` ante cambios de tamaño del contenedor (`ResizeObserver`), sin tocar posición ni encuadre.
+
+### Verificación
+`npm run build` sin errores de TypeScript ni de lint.
+
+### Request original
+> Fijar y centrar la cámara del visor 3D de la planta para que no se pueda mover, asegurando el tamaño justo al abrir.
+
+---
+
 ## [0.10.0] — 2026-08-12
 
 ### Changed — Rediseño Glassmorphic 3D inmersivo del dashboard
