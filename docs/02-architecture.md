@@ -11,6 +11,10 @@
 | `@supabase/supabase-js` | Cliente de base de datos y (si aplica) realtime |
 | `lucide-react` | Iconografía |
 | `canvas-confetti` (+ `@types/canvas-confetti`) | Animación de confeti al reclamar el premio semanal |
+| `three` (+ `@types/three`) | Render 3D del avatar de la planta (WebGL) en el dashboard |
+| `recharts` | Gráficos históricos de sensores (SVG, declarativo en JSX) |
+| `server-only` | Marca módulos que nunca deben llegar al browser (cliente de service role) |
+| `tsx` (dev) | Corre el script del simulador del ESP32 en TypeScript |
 
 > No se usa Prisma ni ningún ORM: las queries a Supabase se hacen con el cliente `@supabase/supabase-js` directamente desde `src/services/`. Decisión registrada en ADR-001.
 
@@ -30,25 +34,44 @@ proyecto-plant/
 ├── src/
 │   ├── proxy.ts                    # Protege rutas privadas verificando la cookie de sesión (antes "middleware.ts", renombrado en Next.js 16)
 │   ├── app/                        # Rutas (App Router)
-│   │   ├── api/                    # Route handlers (auth, sensores, puntos, ingest ESP32)
+│   │   ├── api/
+│   │   │   ├── auth/login/         # POST — valida APP_PASSWORD, emite la cookie
+│   │   │   ├── sensors/
+│   │   │   │   ├── ingest/         # POST — lecturas del ESP32 (Bearer secret)
+│   │   │   │   ├── latest/         # GET  — última lectura + salud
+│   │   │   │   └── history/        # GET  — histórico agregado por buckets
+│   │   │   └── points/
+│   │   │       ├── route.ts        # GET  — progreso de la meta semanal
+│   │   │       └── claim/          # POST — reclama el premio de la semana
 │   │   ├── login/
 │   │   │   └── page.tsx            # Pantalla de login (contraseña única)
+│   │   ├── manifest.ts             # Web app manifest (Next lo sirve en /manifest.webmanifest)
+│   │   ├── icon.tsx                # Favicon 32×32 generado con ImageResponse
+│   │   ├── apple-icon.tsx          # Ícono de iOS 180×180
+│   │   ├── icons/[variant]/        # Íconos del manifest (192, 512, maskable)
 │   │   ├── layout.tsx
-│   │   ├── page.tsx
+│   │   ├── page.tsx                # Dashboard: planta 3D + meta + sensores + gráficos
 │   │   └── globals.css             # Solo directivas de Tailwind + estilos base globales
 │   ├── components/
 │   │   ├── ui/                     # Componentes base reutilizables (Button, Card, ProgressBar...)
 │   │   ├── layout/                 # Header, Container, BottomNav, etc.
-│   │   └── features/               # Componentes específicos de cada feature (PlantAvatar, SensorPanel...)
-│   ├── lib/                        # Clientes y utilidades (cliente de Supabase, helpers)
-│   ├── hooks/                      # Custom hooks (useAuth, useSensorData, usePoints...)
+│   │   └── features/
+│   │       ├── PlantAvatar/        # Modelo 3D de la planta (three.js): Plant3DViewer.tsx, plantModel.ts
+│   │       ├── SensorPanel/        # Grilla con las 4 métricas actuales
+│   │       ├── WeeklyGoal/         # Barra de progreso + botón de premio
+│   │       ├── SensorCharts/       # Gráficos históricos (recharts) + vista de tabla
+│   │       └── PWA/                # Registro del service worker
+│   ├── lib/                        # Utilidades y lógica pura (supabase, apiAuth, session,
+│   │                               #   plantHealth, points, history)
+│   ├── hooks/                      # Custom hooks (useSensorData, usePoints, useSensorHistory)
 │   ├── types/                      # Tipos globales / tipos de datos de Supabase
-│   ├── constants/                  # Constantes (ej. meta semanal de puntos)
-│   └── services/                   # Capa de acceso a datos (sensor.service.ts, points.service.ts...)
+│   ├── constants/                  # Constantes (sensors, points, charts, auth)
+│   └── services/                   # Capa de acceso a datos (sensor.service.ts, points.service.ts)
 ├── scripts/
-│   └── simulate-esp32.ts           # Script para simular el ESP32 sin hardware real (FASE 2)
+│   └── simulate-esp32.ts           # Script para simular el ESP32 sin hardware real
 ├── public/
-│   └── icons/                      # Íconos PWA (varios tamaños)
+│   ├── sw.js                       # Service worker (network-first, nunca cachea /api)
+│   └── offline.html                # Pantalla estática de "sin conexión"
 ├── supabase/
 │   └── migrations/                 # Migraciones SQL (se crean por feature en FASE 2)
 ├── .windsurfrules

@@ -15,6 +15,21 @@ La contraseña **NUNCA** se hardcodea en el código ni se documenta en archivos 
 - No es JWT ni usa ninguna librería externa: implementación mínima a mano en `src/lib/session.ts`, ya que no había necesidad de más claims que la expiración (Mandamiento I — no agregar dependencias no solicitadas).
 - Cualquier token con firma inválida, expirado, o simplemente malformado (base64 corrupto) se trata de forma uniforme como sesión inválida — `verifySessionToken()` nunca lanza una excepción hacia quien la llama.
 
+### Rutas públicas (fuera del proxy)
+El matcher de `src/proxy.ts` deja pasar sin sesión, además de `/login` y `/api/*`:
+
+| Ruta | Por qué es pública |
+|------|--------------------|
+| `/manifest.webmanifest` | El navegador lo pide **sin credenciales**; si el proxy lo interceptara, la app no sería instalable |
+| `/sw.js` | El service worker se registra antes de cualquier sesión |
+| `/offline.html` | Pantalla estática de "sin conexión" |
+| `/icon`, `/apple-icon`, `/icons/*` | Íconos generados que referencian el `<head>` y el manifest |
+| `/_next/static/*`, `/_next/image`, imágenes | Assets del build |
+
+Ninguna expone datos: son metadatos de la app, imágenes generadas sin entrada del usuario y una página estática. El dashboard (`/`) y **todos** los endpoints de datos siguen detrás de la cookie de sesión — `/api/*` queda fuera del proxy pero cada route handler llama a `requireSession()` o `requireIngestSecret()` por su cuenta.
+
+El service worker (`public/sw.js`) **nunca cachea `/api/*`**, justamente porque esas respuestas van detrás de la cookie de sesión y no deben quedar en el cache del navegador. Tampoco intercepta requests que no sean `GET`.
+
 ## Autorización
 No hay roles ni multi-tenancy: es una app de un solo "usuario" real. La única distinción de autorización es:
 - **Dashboard/API de la app** → protegido por la cookie de sesión (contraseña `APP_PASSWORD`).

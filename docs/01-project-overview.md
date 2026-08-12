@@ -27,13 +27,13 @@ Web App tipo PWA estilo "Tamagotchi" para cuidar una planta real (Potus/Peperomi
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | 1 | Setup inicial + estructura + documentación | [x] Completo |
-| 2 | Autenticación simple por contraseña | [ ] Pendiente |
-| 3 | Dashboard mobile-first + estado de sensores en vivo | [ ] Pendiente |
-| 4 | Sistema de puntos + meta semanal (700 pts) + confeti | [ ] Pendiente |
-| 5 | Gráficos históricos de sensores | [ ] Pendiente |
-| 6 | PWA instalable (manifest + service worker) | [ ] Pendiente |
-| 7 | Script de simulación del ESP32 | [ ] Pendiente |
-| 8 | Polish + Deploy en Vercel | [ ] Pendiente |
+| 2 | Autenticación simple por contraseña | [x] Completo |
+| 3 | Dashboard mobile-first + estado de sensores en vivo | [x] Completo |
+| 4 | Sistema de puntos + meta semanal (700 pts) + confeti | [x] Completo |
+| 5 | Gráficos históricos de sensores | [x] Completo |
+| 6 | PWA instalable (manifest + service worker) | [x] Completo |
+| 7 | Script de simulación del ESP32 | [x] Completo |
+| 8 | Polish + Deploy en Vercel | [ ] En curso |
 
 ## Principio Fundamental
 > La app es un regalo, no una herramienta corporativa: prioridad al diseño cálido, cercano y divertido (planta 3D a color con carita feliz) por sobre la formalidad. La lógica y los datos deben ser sólidos, pero la piel visual queda a criterio del diseño que aporte el usuario.

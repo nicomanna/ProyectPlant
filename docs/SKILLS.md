@@ -41,3 +41,5 @@ relevante.
 | Fecha | Acción | Skill | Motivo |
 |-------|--------|-------|--------|
 | 2026-08-11 | Registrada | `ui-styling`, `ui-ux-pro-max`, `dataviz`, `run`, `code-review`, `security-review` | Setup inicial (FASE 1) — skills del entorno Claude Code relevantes para este proyecto |
+| 2026-08-12 | Usada | `run` | Verificación del dashboard 3D en el navegador real (feature `dashboard`) |
+| 2026-08-12 | Usada | `dataviz` | Diseño y **validación de la paleta** de los gráficos históricos (feature `graficos`). Su validador rechazó la paleta de 4 hues y forzó el diseño final de un solo hue — ver `docs/features/graficos.md` |

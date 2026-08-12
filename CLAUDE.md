@@ -65,6 +65,9 @@
 | `src/app/api/sensors/**` | `docs/features/sensores.md` + `docs/DB_SCHEMA.md` + `docs/API_DOCS.md` |
 | `src/app/api/points/**` | `docs/features/puntos.md` + `docs/DB_SCHEMA.md` + `docs/API_DOCS.md` |
 | `src/components/features/PlantAvatar/**` | `docs/features/dashboard.md` |
+| `src/components/features/SensorPanel/**` | `docs/features/sensores.md` |
+| `src/components/features/WeeklyGoal/**` | `docs/features/puntos.md` |
+| `src/components/features/SensorCharts/**`, `src/constants/charts.ts` | `docs/features/graficos.md` (⚠️ si se tocan colores → re-correr el validador de la skill `dataviz`) |
 | `scripts/simulate-esp32.ts` | `docs/features/simulador-esp32.md` |
 | `supabase/migrations/*.sql` | `docs/DB_SCHEMA.md` |
 | `public/manifest.json`, service worker | `docs/features/pwa.md` |
