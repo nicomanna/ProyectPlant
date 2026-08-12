@@ -1,0 +1,38 @@
+# PLANT TAMAGOTCHI — Reglas para IA (Método AInnovate v2)
+# Este proyecto usa Documentation-Driven Development.
+# LEER metodo_ainnovate.md para el método completo.
+
+conventions: |
+  Particularidades de este proyecto:
+  - Stack: Next.js (App Router) + TypeScript + Tailwind CSS + Supabase
+    (cliente @supabase/supabase-js directo, SIN Prisma). Deploy en Vercel.
+  - Tailwind en JSX: clases directo en el JSX/TSX, sin .module.css por componente.
+  - Flujo rápido: cambios puramente visuales (color, spacing, copy) solo
+    requieren actualizar CHANGELOG.md, no un doc de feature completo.
+  - App de un solo usuario: auth por contraseña única (APP_PASSWORD).
+
+  ANTES de cualquier cambio:
+  1. Leer docs/01-project-overview.md y docs/02-architecture.md
+  2. Leer docs/features/[feature].md de la feature a modificar
+  3. Si no existe doc → crearlo primero (salvo flujo rápido de UI)
+
+  12 Mandamientos (INVIOLABLES):
+  I. Solo implementar lo pedido (no alucinar)
+  II. Separar lógica de estilos (Tailwind en JSX, tipos en .types.ts)
+  III. Documentar cada cambio
+  IV. Actualizar CHANGELOG en cada request
+  V. Documentar cambios de DB en DB_SCHEMA.md
+  VI. Seguir la estructura de carpetas
+  VII. Respetar el sistema de estilos (Tailwind v4, @theme en globals.css, sin tailwind.config.js)
+  VIII. Nunca hardcodear credenciales (incluida APP_PASSWORD)
+  IX. TypeScript estricto (cero any)
+  X. Validar antes de entregar
+  XI. Mantener consistencia con convenciones existentes
+  XII. Comunicar con claridad al terminar
+
+  Después de cada cambio:
+  - Actualizar doc de la feature
+  - Actualizar architecture si cambió estructura
+  - Actualizar DB_SCHEMA.md si cambió schema
+  - Actualizar API_DOCS.md si cambió endpoint
+  - Agregar entrada en CHANGELOG.md
