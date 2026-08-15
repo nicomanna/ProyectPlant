@@ -5,6 +5,83 @@
 
 ---
 
+## [0.12.0] — 2026-08-15
+
+### Added — Simulador 3D del ESP32 en Wokwi + Integración MCP
+
+#### Archivos afectados
+- `docs/features/wokwi-integration.md` — **Nuevo**: documentación de la integración con Wokwi
+- `wokwi/code.ino` — **Nuevo**: código Arduino para el ESP32 simulado (WiFi, sensores, HTTP POST)
+- `wokwi/diagram.json` — **Nuevo**: diagrama del circuito (ESP32 + sensores virtuales)
+- `wokwi/wokwi.toml` — **Nuevo**: configuración de simulación de Wokwi
+- `.mcp.json` — Actualizado: servidor MCP de Wokwi con token API configurado
+- `CHANGELOG.md` — Esta entrada
+
+### Descripción detallada
+Se implementa un simulador 3D en Wokwi para el ESP32 con sensores virtuales (humedad, luz, temperatura, humedad ambiente). El circuito emula el hardware real:
+
+- ESP32 DevKit-C con pines ADC para sensores analógicos
+- Sensor capacitivo de humedad del suelo → GPIO_34 (ADC)
+- Fotoresistor de luz → GPIO_35 (ADC)
+- DHT22 (temperatura/humedad) → GPIO_5 (GPIO digital)
+
+El código Arduino (`code.ino`) lee los sensores, escala los valores a rangos físicos (0-100%), construye un JSON con `soil_moisture`, `light_level`, `temperature`, `humidity` y postea a `/api/sensors/ingest` con autenticación `Bearer {ESP32_INGEST_SECRET}`. La frecuencia de lecturas es configurable (10 segundos por defecto).
+
+Flujo de datos:
+```
+Sensores virtuales (Wokwi) → ADC/GPIO (ESP32) → Arduino → HTTP POST → /api/sensors/ingest → Supabase
+```
+
+La integración vía MCP permite que Claude Code inspeccione y optimize el código Arduino sin necesidad de IDE externo.
+
+### Testing
+```bash
+# Terminal 1: app Next.js
+npm run dev
+
+# Terminal 2: simulador Wokwi
+wokwi-cli run --file wokwi/diagram.json
+
+# Terminal 3: verificar datos
+curl http://localhost:3000/api/sensors/latest -H "Cookie: plant_session=..."
+```
+
+### Request original
+> "me gustaría hacer la simulación con la esp32 de este proyecto" / "crea el proyecto desde cero, y lo que te pase es un token CI"
+
+---
+
+## [0.11.0] — 2026-08-12
+
+### Added — Modal de premio semanal (Glassmorphism)
+
+#### Archivos afectados
+- `src/constants/prizes.ts` — **Nuevo**: lista `WEEKLY_PRIZES`, `DEFAULT_PRIZE`, `PRIZES_WEEK_1_START` y tipos `WeeklyPrize`/`PrizeType`
+- `src/lib/prizes.ts` — **Nuevo**: `getWeekNumber(weekStart)` y `getPrizeForWeek(weekStart)` (funciones puras)
+- `src/components/features/PrizeModal/**` — **Nuevo**: modal Glassmorphism de la carta/vale + botón "Marcar como Canjeado" (`.types.ts`, `.tsx`, `index.ts`)
+- `src/types/points.types.ts` — `PointsResponse` y `ClaimResponse` ahora incluyen `weekNumber` y `prize`
+- `src/app/api/points/route.ts` — `GET` resuelve y devuelve `weekNumber` y `prize`
+- `src/app/api/points/claim/route.ts` — `POST` devuelve `weekNumber` y `prize`
+- `src/components/features/WeeklyGoal/**` — El botón "¡Ver mi premio!" abre el modal en vez de reclamar directo (`onOpenPrize`)
+- `src/app/page.tsx` — Estado del modal, apertura/cierre y encadenamiento reclamo → confeti
+- `docs/features/puntos.md` — Nueva sección de premios semanales
+- `docs/API_DOCS.md` — Actualizadas las respuestas de `/api/points` y `/api/points/claim`
+- `docs/02-architecture.md` — Estructura: carpeta `PrizeModal`, `lib/prizes.ts`, `constants/prizes.ts`
+- `CHANGELOG.md` — Esta entrada
+
+### Descripción detallada
+Se cambia el flujo de reclamo del premio semanal: en vez de reclamar directo al tocar el botón del `WeeklyGoal`, ahora se abre un **modal Glassmorphism** (`PrizeModal`) que muestra la carta o vale correspondiente a la semana, y solo al tocar "Marcar como Canjeado" se dispara el `POST /api/points/claim` + confeti.
+
+Los premios se definen por semana en `src/constants/prizes.ts` (semanas 1–4 + `DEFAULT_PRIZE` para el resto). El número de semana y el premio se calculan en el servidor (`src/lib/prizes.ts`, funciones puras) y se devuelven en `GET /api/points` y `POST /api/points/claim`, de modo que el modal no depende del estado del cliente. La lógica de "¿ya se reclamó?" sigue viviendo en el servidor (`weekly_goals.claimed_at`); el modal es solo presentación.
+
+### Verificación
+`npm run build` sin errores de TypeScript. `npm run lint` limpio.
+
+### Request original
+> Semana 1 (del 10 al 16 de agosto): una carta escrita a mano... Semana 2: vale por una merienda juntos. Semana 3: vale salida al cine. Semana 4: vale del 100% en Kobac Delivery. Quiero que al alcanzar 700 pts el botón "ver mi premio" me lleve a un modal.
+
+---
+
 ## [0.10.5] — 2026-08-12
 
 ### Changed — Botón de preview del confeti siempre visible en modo dev

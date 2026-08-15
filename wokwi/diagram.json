@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "author": "Plant Tamagotchi Team",
+  "title": "Plant Tamagotchi - ESP32 + Sensores",
+  "description": "Simulador completo del ESP32 con sensores de humedad, luz, temperatura y humedad ambiente",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-c",
+      "id": "esp32",
+      "top": 0,
+      "left": 0,
+      "attrs": {
+        "env": "arduino"
+      }
+    },
+    {
+      "type": "wokwi-analog-sensor",
+      "id": "soil-moisture",
+      "top": 150,
+      "left": -150,
+      "attrs": {
+        "label": "Soil Moisture",
+        "min": "0",
+        "max": "100",
+        "initial": "45"
+      }
+    },
+    {
+      "type": "wokwi-analog-sensor",
+      "id": "light-sensor",
+      "top": 300,
+      "left": -150,
+      "attrs": {
+        "label": "Light Level",
+        "min": "0",
+        "max": "100",
+        "initial": "60"
+      }
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht22",
+      "top": 450,
+      "left": -150,
+      "attrs": {
+        "humidity": "50",
+        "temperature": "22"
+      }
+    },
+    {
+      "type": "wokwi-logic-analyzer",
+      "id": "analyzer",
+      "top": 0,
+      "left": 300,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [
+      "esp32:34",
+      "soil-moisture:OUT",
+      "black"
+    ],
+    [
+      "esp32:35",
+      "light-sensor:OUT",
+      "black"
+    ],
+    [
+      "esp32:5",
+      "dht22:DAT",
+      "yellow"
+    ],
+    [
+      "esp32:GND.1",
+      "soil-moisture:GND",
+      "black"
+    ],
+    [
+      "esp32:GND.2",
+      "light-sensor:GND",
+      "black"
+    ],
+    [
+      "esp32:GND.3",
+      "dht22:GND",
+      "black"
+    ],
+    [
+      "soil-moisture:VCC",
+      "esp32:3V3",
+      "red"
+    ],
+    [
+      "light-sensor:VCC",
+      "esp32:3V3",
+      "red"
+    ],
+    [
+      "dht22:VCC",
+      "esp32:3V3",
+      "red"
+    ]
+  ],
+  "dependencies": {}
+}

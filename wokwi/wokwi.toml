@@ -1,0 +1,14 @@
+[wokwi]
+version = 1
+elf = "code.ino.esp32.bin"
+firmware = "code.ino.elf"
+
+[env]
+# Variables de entorno para la simulación
+WIFI_SSID = "Wokwi-GUEST"
+WIFI_PASSWORD = ""
+
+[net]
+# Configuración de red para Wokwi
+# La simulación permite que el ESP32 se conecte a "Wokwi-GUEST" automáticamente
+cidr = "192.168.4.0/24"

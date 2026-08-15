@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "Wokwi": {
+      "type": "stdio",
+      "command": "wokwi-cli",
+      "args": ["mcp"],
+      "env": {
+        "WOKWI_CLI_TOKEN": "${env:WOKWI_CLI_TOKEN}"
+      }
+    }
+  }
+}
