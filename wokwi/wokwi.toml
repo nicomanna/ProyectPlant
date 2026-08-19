@@ -6,7 +6,7 @@ firmware = "code.ino.elf"
 [env]
 # Variables de entorno para la simulación
 WIFI_SSID = "Wokwi-GUEST"
-WIFI_PASSWORD = ""
+WIFI_PASSWORD = "mana2024"
 
 [net]
 # Configuración de red para Wokwi

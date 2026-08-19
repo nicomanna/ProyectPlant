@@ -1,106 +1,67 @@
 {
   "version": 1,
   "author": "Plant Tamagotchi Team",
+  "editor": "wokwi",
   "title": "Plant Tamagotchi - ESP32 + Sensores",
-  "description": "Simulador completo del ESP32 con sensores de humedad, luz, temperatura y humedad ambiente",
+  "description": "Simulador completo del ESP32 con los 5 componentes del kit fisico: humedad de suelo, luz, temperatura/humedad (DHT22) y proximidad (HC-SR04) para la tarea diaria de carino",
   "parts": [
     {
-      "type": "wokwi-esp32-devkit-c",
+      "type": "wokwi-esp32-devkit-v1",
       "id": "esp32",
       "top": 0,
-      "left": 0,
-      "attrs": {
-        "env": "arduino"
-      }
+      "left": 300,
+      "attrs": {}
     },
     {
-      "type": "wokwi-analog-sensor",
+      "type": "wokwi-potentiometer",
       "id": "soil-moisture",
-      "top": 150,
-      "left": -150,
+      "top": -80,
+      "left": -180,
       "attrs": {
-        "label": "Soil Moisture",
-        "min": "0",
-        "max": "100",
-        "initial": "45"
+        "value": "300"
       }
     },
     {
-      "type": "wokwi-analog-sensor",
+      "type": "wokwi-photoresistor-sensor",
       "id": "light-sensor",
-      "top": 300,
-      "left": -150,
-      "attrs": {
-        "label": "Light Level",
-        "min": "0",
-        "max": "100",
-        "initial": "60"
-      }
+      "top": 90,
+      "left": -190,
+      "attrs": {}
     },
     {
       "type": "wokwi-dht22",
       "id": "dht22",
-      "top": 450,
-      "left": -150,
+      "top": 260,
+      "left": -190,
       "attrs": {
-        "humidity": "50",
-        "temperature": "22"
+        "temperature": "22",
+        "humidity": "50"
       }
     },
     {
-      "type": "wokwi-logic-analyzer",
-      "id": "analyzer",
-      "top": 0,
-      "left": 300,
-      "attrs": {}
+      "type": "wokwi-hc-sr04",
+      "id": "hc-sr04",
+      "top": 430,
+      "left": -190,
+      "attrs": {
+        "distance": "100"
+      }
     }
   ],
   "connections": [
-    [
-      "esp32:34",
-      "soil-moisture:OUT",
-      "black"
-    ],
-    [
-      "esp32:35",
-      "light-sensor:OUT",
-      "black"
-    ],
-    [
-      "esp32:5",
-      "dht22:DAT",
-      "yellow"
-    ],
-    [
-      "esp32:GND.1",
-      "soil-moisture:GND",
-      "black"
-    ],
-    [
-      "esp32:GND.2",
-      "light-sensor:GND",
-      "black"
-    ],
-    [
-      "esp32:GND.3",
-      "dht22:GND",
-      "black"
-    ],
-    [
-      "soil-moisture:VCC",
-      "esp32:3V3",
-      "red"
-    ],
-    [
-      "light-sensor:VCC",
-      "esp32:3V3",
-      "red"
-    ],
-    [
-      "dht22:VCC",
-      "esp32:3V3",
-      "red"
-    ]
+    ["esp32:D34", "soil-moisture:SIG", "blue", ["h-40"]],
+    ["esp32:D35", "light-sensor:AO", "blue", ["h20"]],
+    ["esp32:D5", "dht22:SDA", "yellow", ["h20"]],
+    ["esp32:D25", "hc-sr04:TRIG", "green", ["h20"]],
+    ["esp32:D26", "hc-sr04:ECHO", "purple", ["h30"]],
+    ["esp32:3V3", "soil-moisture:VCC", "red", ["h-60", "v-180"]],
+    ["esp32:3V3", "light-sensor:VCC", "red", ["h-50", "v-120"]],
+    ["esp32:3V3", "dht22:VCC", "red", ["h-50", "v0"]],
+    ["esp32:VIN", "hc-sr04:VCC", "red", ["h-40", "v40"]],
+    ["esp32:GND.1", "soil-moisture:GND", "black", ["h-70", "v-160"]],
+    ["esp32:GND.1", "light-sensor:GND", "black", ["h-60", "v-100"]],
+    ["esp32:GND.2", "dht22:GND", "black", ["h-60", "v20"]],
+    ["esp32:GND.2", "hc-sr04:GND", "black", ["h-50", "v60"]]
   ],
   "dependencies": {}
 }
