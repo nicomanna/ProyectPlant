@@ -59,14 +59,15 @@ proyecto-plant/
 │   │       ├── PlantAvatar/        # Modelo 3D de la planta (three.js): Plant3DViewer.tsx, plantModel.ts
 │   │       ├── SensorPanel/        # Grilla con las 4 métricas actuales
 │   │       ├── WeeklyGoal/         # Barra de progreso + botón de premio
+│   │       ├── PrizeModal/         # Modal Glassmorphism de la carta/vale semanal
 │   │       ├── SensorCharts/       # Gráficos históricos (recharts) + vista de tabla
 │   │       ├── PWA/                # Registro del service worker
 │   │       └── ConfettiPreview/    # Preview de debug del confeti (?preview=reach|claim)
 │   ├── lib/                        # Utilidades y lógica pura (supabase, apiAuth, session,
-│   │                               #   plantHealth, points, history)
+│   │                               #   plantHealth, points, prizes, history)
 │   ├── hooks/                      # Custom hooks (useSensorData, usePoints, useSensorHistory)
 │   ├── types/                      # Tipos globales / tipos de datos de Supabase
-│   ├── constants/                  # Constantes (sensors, points, charts, auth, orbs)
+│   ├── constants/                  # Constantes (sensors, points, prizes, charts, auth, orbs)
 │   └── services/                   # Capa de acceso a datos (sensor.service.ts, points.service.ts)
 ├── scripts/
 │   └── simulate-esp32.ts           # Script para simular el ESP32 sin hardware real

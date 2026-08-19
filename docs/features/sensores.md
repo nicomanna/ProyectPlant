@@ -59,6 +59,7 @@ Esto es deliberado y se documenta también en `docs/03-security.md`: la autoriza
 |--------|------|------|-------------|
 | POST | `/api/sensors/ingest` | `ESP32_INGEST_SECRET` | Inserta una lectura |
 | GET | `/api/sensors/latest` | Cookie de sesión | Última lectura + salud calculada |
+| POST | `/api/sensors/care` | `ESP32_INGEST_SECRET` | Registra la visita diaria (HC-SR04); ver `docs/features/puntos.md` |
 
 Detalle de request/response en `docs/API_DOCS.md`.
 

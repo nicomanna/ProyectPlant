@@ -2,7 +2,7 @@
 
 **Base URL:** `/api`
 **Autenticación:** Cookie de sesión (dashboard) o header con `ESP32_INGEST_SECRET` (ingestión de sensores)
-**Última actualización:** 2026-08-12
+**Última actualización:** 2026-08-19
 
 ---
 
@@ -27,6 +27,7 @@ Authorization: Bearer {ESP32_INGEST_SECRET}
 | POST | `/api/sensors/ingest` | Recibe una lectura del ESP32 / simulador | `ESP32_INGEST_SECRET` | **Implementado** |
 | GET | `/api/sensors/latest` | Última lectura de sensores + salud calculada | Sesión | **Implementado** |
 | GET | `/api/sensors/history` | Histórico agregado por buckets para los gráficos | Sesión | **Implementado** |
+| POST | `/api/sensors/care` | Registra la visita diaria a la planta (HC-SR04) | `ESP32_INGEST_SECRET` | **Implementado** |
 | GET | `/api/points` | Puntos actuales y progreso de la meta semanal | Sesión | **Implementado** |
 | POST | `/api/points/claim` | Reclama el premio de la semana actual | Sesión | **Implementado** |
 
@@ -185,23 +186,66 @@ Devuelve la serie que alimenta los gráficos. Las lecturas se **promedian por bu
 
 ---
 
+### Registro de visita diaria (cariño)
+
+**`POST /api/sensors/care`** — Auth: `Authorization: Bearer {ESP32_INGEST_SECRET}`
+
+El ESP32 llama a este endpoint una vez por día, cuando el HC-SR04 detecta que alguien se quedó cerca de la planta (≤30cm sostenido ≥3s — ver `docs/features/wokwi-integration.md`). Persiste el evento en `care_log`, que alimenta la 5ta métrica del sistema de puntos (`docs/features/puntos.md`).
+
+**Request body:**
+```json
+{
+  "occurred_at": "2026-08-19T14:30:00.000Z"
+}
+```
+`occurred_at` es opcional (default: `now()` del servidor). El día se calcula con la misma convención local que agrupa `sensor_readings` (`toDayKey()`).
+
+**Response 201** (primera vez ese día):
+```json
+{
+  "day": "2026-08-19",
+  "caredAt": "2026-08-19T14:30:01.123Z",
+  "alreadyRecorded": false
+}
+```
+
+**Response 200** (ya se había registrado hoy — reintento del dispositivo o reboot del ESP32 que reseteó `caredToday`, idempotente):
+```json
+{
+  "day": "2026-08-19",
+  "caredAt": "2026-08-19T14:30:01.123Z",
+  "alreadyRecorded": true
+}
+```
+
+**Response 400** (`occurred_at` inválido) — `error: "invalid_request"`.
+
+**Response 401** — `error: "unauthorized"`, secret inválido o ausente.
+
+**Response 500** — `error: "storage_error"` o `server_misconfigured`.
+
+---
+
 ### Progreso semanal de puntos
 
 **`GET /api/points`** — Auth: cookie de sesión
 
-Recalcula los puntos de cada día de la semana en curso a partir de `sensor_readings`, los persiste en `points_log` (upsert por día) y devuelve el progreso hacia los 700 puntos. El recálculo completo en cada pedido es barato (7 días de lecturas) y absorbe las lecturas que hayan llegado atrasadas del dispositivo.
+Recalcula los puntos de cada día de la semana en curso a partir de `sensor_readings` + `care_log`, los persiste en `points_log` (upsert por día) y devuelve el progreso hacia los 700 puntos. El recálculo completo en cada pedido es barato (7 días de lecturas) y absorbe las lecturas que hayan llegado atrasadas del dispositivo.
 
 **Response 200:**
 ```json
 {
   "weekStart": "2026-08-10",
+  "weekNumber": 1,
+  "today": "2026-08-19",
   "days": [
     {
       "day": "2026-08-10",
-      "soil_points": 50,
-      "light_points": 25,
-      "temp_points": 15,
-      "humidity_points": 10,
+      "soil_points": 40,
+      "light_points": 20,
+      "temp_points": 12,
+      "humidity_points": 8,
+      "care_points": 20,
       "total_points": 100,
       "reading_count": 24
     }
@@ -210,14 +254,22 @@ Recalcula los puntos de cada día de la semana en curso a partir de `sensor_read
   "targetPoints": 700,
   "progress": 0.589,
   "goalReached": false,
-  "claimed": false
+  "claimed": false,
+  "prize": {
+    "id": "week-1",
+    "weekNumber": 1,
+    "title": "Nuestra Planta, Nuestro Espacio ❤️",
+    "type": "carta",
+    "description": "Una carta hecha a mano...",
+    "accent": "#f97316"
+  }
 }
 ```
-`days` siempre trae las 7 entradas de la semana (lunes a domingo); los días futuros o sin lecturas vienen en 0. `progress` está acotado a 1.
+`days` siempre trae las 7 entradas de la semana (lunes a domingo); los días futuros o sin lecturas/visitas vienen en 0. `progress` está acotado a 1. `today` es el día actual (`YYYY-MM-DD`, calculado en el servidor) — lo usa el checklist de tareas (`WeeklyGoalModal`) para saber qué fila de `days` mostrar como "hoy" sin depender del reloj/timezone del browser. `weekNumber` es el número de semana del calendario (1..∞) y `prize` es el objeto `WeeklyPrize` resuelto por `getPrizeForWeek` (ver `src/lib/prizes.ts`); si no hay premio definido para la semana, se devuelve `DEFAULT_PRIZE`.
 
 **Response 401** — `error: "unauthorized"`.
 
-**Response 500** — `error: "storage_error"`. Ocurre también si las migraciones `0001` / `0002` todavía no fueron aplicadas.
+**Response 500** — `error: "storage_error"`. Ocurre también si las migraciones `0001` / `0002` / `0003` todavía no fueron aplicadas.
 
 ---
 
@@ -232,9 +284,19 @@ Marca la semana en curso como reclamada. **Re-verifica la meta en el servidor** 
 {
   "claimed": true,
   "claimedAt": "2026-08-16T18:04:22.481Z",
+  "weekNumber": 1,
+  "prize": {
+    "id": "week-1",
+    "weekNumber": 1,
+    "title": "Nuestra Planta, Nuestro Espacio ❤️",
+    "type": "carta",
+    "description": "Una carta hecha a mano...",
+    "accent": "#f97316"
+  },
   "message": "¡Premio reclamado!"
 }
 ```
+`weekNumber` y `prize` permiten que el `PrizeModal` muestre el premio recién canjeado sin depender del estado previo del cliente.
 
 **Response 400** (todavía no llegó a la meta):
 ```json

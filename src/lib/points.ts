@@ -1,4 +1,4 @@
-import { POINTS_SCORING } from '@/constants/points'
+import { CARE_SCORING, POINTS_SCORING } from '@/constants/points'
 import { SENSOR_METRICS, type SensorMetric } from '@/constants/sensors'
 import { isMetricOptimal } from '@/lib/plantHealth'
 import type { SensorReading } from '@/types/sensor.types'
@@ -25,21 +25,31 @@ function metricPoints(readings: SensorReading[], metric: SensorMetric): number {
   return round2(Math.min(1, fraction / threshold) * max)
 }
 
-// `day` en formato YYYY-MM-DD. Un día sin lecturas da 0: sin datos no hay
-// evidencia de cuidado.
-export function computeDailyPoints(day: string, readings: SensorReading[]): DailyPoints {
+// `day` en formato YYYY-MM-DD. Un día sin lecturas da 0 en las métricas
+// ambientales: sin datos no hay evidencia de cuidado. `cared` viene de
+// `care_log` (visita diaria detectada por el HC-SR04, ver `care.service.ts`).
+export function computeDailyPoints(
+  day: string,
+  readings: SensorReading[],
+  cared: boolean
+): DailyPoints {
   const points = {
     soil_points: metricPoints(readings, 'soil_moisture'),
     light_points: metricPoints(readings, 'light_level'),
     temp_points: metricPoints(readings, 'temperature'),
     humidity_points: metricPoints(readings, 'humidity'),
+    care_points: cared ? CARE_SCORING.max : 0,
   }
 
   return {
     day,
     ...points,
     total_points: round2(
-      points.soil_points + points.light_points + points.temp_points + points.humidity_points
+      points.soil_points +
+        points.light_points +
+        points.temp_points +
+        points.humidity_points +
+        points.care_points
     ),
     reading_count: readings.length,
   }

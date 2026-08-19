@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireSession } from '@/lib/apiAuth'
 import { getReadingsSince } from '@/services/sensor.service'
+import { getCareDaysSince } from '@/services/care.service'
 import { claimWeeklyGoal, getOrCreateWeeklyGoal } from '@/services/points.service'
 import {
   computeDailyPoints,
@@ -9,6 +10,7 @@ import {
   groupReadingsByDay,
   toDayKey,
 } from '@/lib/points'
+import { getPrizeForWeek, getWeekNumber } from '@/lib/prizes'
 import type { ClaimResponse } from '@/types/points.types'
 
 export async function POST(request: NextRequest) {
@@ -23,10 +25,14 @@ export async function POST(request: NextRequest) {
 
     // La meta se re-verifica en el servidor: no alcanza con que el cliente
     // diga que llegó a los 700 puntos.
-    const readings = await getReadingsSince(weekStart)
+    const [readings, careDays] = await Promise.all([
+      getReadingsSince(weekStart),
+      getCareDaysSince(weekStart),
+    ])
     const byDay = groupReadingsByDay(readings)
     const totalPoints = getWeekDays(weekStart).reduce(
-      (sum, day) => sum + computeDailyPoints(day, byDay.get(day) ?? []).total_points,
+      (sum, day) =>
+        sum + computeDailyPoints(day, byDay.get(day) ?? [], careDays.has(day)).total_points,
       0
     )
 
@@ -45,6 +51,8 @@ export async function POST(request: NextRequest) {
     const response: ClaimResponse = {
       claimed: true,
       claimedAt: claimed.claimed_at ?? new Date().toISOString(),
+      weekNumber: getWeekNumber(weekStart),
+      prize: getPrizeForWeek(weekStart),
       message: '¡Premio reclamado!',
     }
 

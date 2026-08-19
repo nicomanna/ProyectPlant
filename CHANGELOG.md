@@ -5,6 +5,68 @@
 
 ---
 
+## [0.14.0] — 2026-08-19
+
+### Added — Checklist de tareas de la meta semanal + visita diaria (HC-SR04) conectada al backend
+
+#### Archivos afectados
+- `supabase/migrations/0003_care_log.sql` — **Nuevo**: tabla `care_log` (evento discreto por día) + columna `care_points` en `points_log`
+- `src/types/care.types.ts` — **Nuevo**: `CareEvent`, `CareIngestRequest`, `CareIngestResponse`
+- `src/types/points.types.ts` — `DailyPoints.care_points`, `PointsResponse.today`
+- `src/constants/points.ts` — Rebalanceo de `POINTS_SCORING` (soil 50→40, light 25→20, temp 15→12, humidity 10→8) + `CARE_SCORING` nuevo (máx. 20, todo-o-nada)
+- `src/lib/points.ts` — `computeDailyPoints` recibe si hubo visita ese día y suma `care_points`
+- `src/services/care.service.ts` — **Nuevo**: `recordCareEvent` (upsert idempotente por día), `getCareDaysSince`
+- `src/app/api/sensors/care/route.ts` — **Nuevo**: `POST` — el ESP32 reporta la visita diaria
+- `src/app/api/points/route.ts`, `src/app/api/points/claim/route.ts` — cruzan `care_log` con `sensor_readings` al recalcular puntos; `GET /api/points` expone `today`
+- `src/components/features/WeeklyGoal/WeeklyGoalModal.tsx` + `WeeklyGoalModal.types.ts` — **Nuevo**: modal glassmorphism con el checklist de las 5 tareas del día, en tiempo real
+- `src/components/features/WeeklyGoal/WeeklyGoal.tsx`, `WeeklyGoal.types.ts`, `index.ts` — el header del panel abre el modal (`onOpenDetail`)
+- `src/app/page.tsx` — estado del modal de checklist
+- `wokwi/code.ino` — `postCareToAPI()`: al detectar cariño, además del log por Serial, hace `POST /api/sensors/care`
+- `wokwi/README.md`, `docs/features/wokwi-integration.md` — la detección de "cariño" ya no es solo local, está conectada al backend
+- `docs/features/puntos.md`, `docs/DB_SCHEMA.md`, `docs/API_DOCS.md`, `docs/features/sensores.md` — documentación de la 5ta métrica, la tabla `care_log` y el nuevo endpoint
+- `CHANGELOG.md` — Esta entrada
+
+### Descripción detallada
+El panel "Meta semanal" solo mostraba una barra de progreso, sin explicar qué había que hacer para sumar los 100 pts del día. Ahora, tocar el panel abre un checklist con las 5 tareas de hoy: las 4 métricas ambientales (mantenerse en rango) más una tarea nueva, "visitar la planta 1 vez al día".
+
+Esa quinta tarea se apoya en el sensor ultrasónico HC-SR04, que ya estaba cableado en el firmware (detecta ≥3s de cercanía sostenida) pero cuya detección era solo local (log por Serial) desde la entrada `[0.13.0]`. Esta entrada termina de conectarlo: el evento se persiste en la tabla nueva `care_log` (idempotente por día) vía `POST /api/sensors/care`, y se integra como 5ta métrica **dentro** de los 100 pts/día existentes — no como bonus aparte ni como requisito bloqueante. Los 4 pesos ambientales se reescalaron ×0.8 para liberar 20 pts (todo-o-nada) para la visita, preservando que el agua siga siendo la métrica más importante (el doble que la visita).
+
+El checklist es dinámico: cada fila ambiental refleja si la **última lectura real** está en rango ahora mismo (con un estado aparte de "sin datos" si todavía no llegó ninguna lectura), y la fila de visita refleja si ya se registró cariño hoy — no es solo una lista estática de reglas.
+
+### Request original
+> "ahora creo que el siguiente paso para hacer es darle saber al usuario que tareas tiene que lograr para llegar a la meta semanal: quiero que haya una opcion donde toques 'meta semanal' donde abras y aparezcan tus tareas [...] y por dia tiene que visitar 1 vez la planta 'sensor de ultra sonido'" — decisiones de diseño (integrar la visita dentro de los 100 pts existentes, checklist dinámico en tiempo real) validadas con el usuario antes de implementar.
+
+---
+
+## [0.13.0] — 2026-08-15
+
+### Fixed / Added — Circuito Wokwi completo con los 5 componentes del kit físico + detección de "cariño" (HC-SR04)
+
+#### Archivos afectados
+- `wokwi/diagram.json` — Reescrito: tipos de parte reales de Wokwi (el anterior usaba `wokwi-analog-sensor` y `wokwi-esp32-devkit-c`, que no existen en el catálogo de Wokwi) + se agrega el sensor ultrasónico HC-SR04
+- `wokwi/code.ino` — Se agregan pines `TRIG`/`ECHO`, lectura de distancia (`readDistanceCm`) y detección de proximidad sostenida (`checkForCare`) para la tarea diaria de cariño
+- `wokwi/README.md` — Tabla de componentes físicos ↔ partes Wokwi, instrucciones para probar la detección de cariño, nota de hardware sobre divisor de voltaje del HC-SR04
+- `docs/features/wokwi-integration.md` — Arquitectura del circuito actualizada (5 componentes), nueva sección "Detección de cariño", corrección de restricciones (ADC de 12 bits, no 10)
+- `CHANGELOG.md` — Esta entrada
+
+### Descripción detallada
+El diagrama anterior no cargaría en Wokwi real: usaba tipos de parte inventados (`wokwi-analog-sensor`, `wokwi-esp32-devkit-c`) y nombres de pin incorrectos (`esp32:34` en vez de `esp32:D34`, `dht22:DAT` en vez de `dht22:SDA`). Se verificaron los tipos reales contra la documentación de Wokwi y se reconstruyó el circuito completo:
+
+- `wokwi-esp32-devkit-v1` — ESP32 NodeMCU
+- `wokwi-potentiometer` — simula el sensor capacitivo de humedad de suelo (Wokwi no tiene chip nativo para ese sensor; usar un potenciómetro es la práctica estándar de la comunidad)
+- `wokwi-photoresistor-sensor` — sensor de luz
+- `wokwi-dht22` — temperatura/humedad
+- `wokwi-hc-sr04` — **nuevo**, sensor ultrasónico de proximidad
+
+El HC-SR04 corresponde al 5º elemento del carrito de compra del kit físico. Su rol: detectar cuando alguien se queda cerca de la planta (≤30cm sostenido 3s, para filtrar falsos positivos de alguien solo pasando) y marcar la tarea diaria de "darle cariño". Por decisión explícita del usuario, **esta versión solo cablea el sensor y agrega la lógica de detección en Arduino (log por Serial)** — todavía no está conectado al backend (Supabase/API); eso queda pendiente como una decisión de diseño aparte (¿tabla nueva? ¿suma a los puntos semanales?).
+
+También se documentó una nota de hardware para el armado físico real: el HC-SR04 usa 5V y su pin `ECHO` requiere un divisor de voltaje antes de conectarlo al GPIO del ESP32 (que solo tolera 3.3V) — esto no afecta la simulación pero sí es crítico para no dañar la placa real.
+
+### Request original
+> "acuerdate de todos los elemetos que lleva, te dejo una captura de todos los elementos que quiero que tenga y tu haz que funcione con cables y todo completo en wokwi" — el usuario compartió una captura del carrito de compra (ESP32, sensor de humedad de suelo, sensor de luz, DHT22, HC-SR04) y pidió que el circuito de Wokwi refleje los 5 componentes, completamente cableado.
+
+---
+
 ## [0.12.0] — 2026-08-15
 
 ### Added — Simulador 3D del ESP32 en Wokwi + Integración MCP

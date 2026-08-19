@@ -4,6 +4,7 @@ export interface WeeklyGoalProps {
   points: PointsResponse | null
   isLoading: boolean
   isClaiming: boolean
-  onClaim: () => void
+  onOpenPrize: () => void
+  onOpenDetail: () => void
   className?: string
 }

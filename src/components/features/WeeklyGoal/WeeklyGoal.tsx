@@ -7,7 +7,8 @@ export function WeeklyGoal({
   points,
   isLoading,
   isClaiming,
-  onClaim,
+  onOpenPrize,
+  onOpenDetail,
   className = '',
 }: WeeklyGoalProps) {
   if (isLoading) {
@@ -20,7 +21,13 @@ export function WeeklyGoal({
 
   return (
     <section className={`glass rounded-2xl px-4 py-4 ${className}`}>
-      <div className="flex items-center justify-between">
+      <button
+        type="button"
+        onClick={onOpenDetail}
+        className="flex w-full items-center justify-between text-left"
+        aria-haspopup="dialog"
+        aria-label="Ver tareas de la meta semanal"
+      >
         <div className="flex items-center gap-2">
           <Trophy className="h-4 w-4 text-amber-300" aria-hidden="true" />
           <h2 className="text-sm font-medium text-foreground">Meta semanal</h2>
@@ -30,7 +37,7 @@ export function WeeklyGoal({
           {' / '}
           {points.targetPoints} pts
         </p>
-      </div>
+      </button>
 
       <div
         className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10"
@@ -53,12 +60,12 @@ export function WeeklyGoal({
       ) : points.goalReached ? (
         <button
           type="button"
-          onClick={onClaim}
+          onClick={onOpenPrize}
           disabled={isClaiming}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400 disabled:opacity-60"
         >
           <Gift className="h-4 w-4" aria-hidden="true" />
-          {isClaiming ? 'Reclamando...' : '¡Reclamar premio!'}
+          {isClaiming ? 'Reclamando...' : '¡Ver mi premio!'}
         </button>
       ) : (
         <p className="mt-2 text-center text-xs text-white/50">

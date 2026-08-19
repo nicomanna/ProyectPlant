@@ -70,16 +70,19 @@ La app Next.js debe estar corriendo en `http://localhost:3000` en otra terminal.
 
 ## Arquitectura del Circuito
 
-El circuito Wokwi emula:
+El circuito Wokwi replica el kit físico completo (5 componentes comprados para el proyecto):
 
-- **1× ESP32** (DevKit-C) con WiFi + GPIO
-- **4× sensores virtuales** mapeados a pines ADC:
-  - Capacitivo de humedad del suelo → `GPIO_34` (ADC1_CH6)
-  - Fotoresistor (luz) → `GPIO_35` (ADC1_CH7)
-  - DHT22 (temperatura/humedad) → `GPIO_5` (GPIO digital)
-  - Simulador de temperatura interna del aire → `GPIO_36` (ADC1_CH0)
+| Componente físico | Parte Wokwi | Pin ESP32 | Función |
+|---|---|---|---|
+| ESP32 NodeMCU DevKit | `wokwi-esp32-devkit-v1` | — | Microcontrolador + WiFi |
+| Sensor capacitivo de humedad de suelo | `wokwi-potentiometer` | `D34` (ADC1_CH6) | Humedad del sustrato |
+| Fotoresistor (luz) | `wokwi-photoresistor-sensor` | `D35` (ADC1_CH7) | Nivel de luz |
+| DHT22 | `wokwi-dht22` | `D5` (digital) | Temperatura + humedad ambiente |
+| HC-SR04 (ultrasónico) | `wokwi-hc-sr04` | `D25` (TRIG) / `D26` (ECHO) | Proximidad — detecta "cariño" diario |
 
-El código Arduino lee estos pines, escala los valores a rangos físicos plausibles (0–100 %) y postea a `/api/sensors/ingest` cada N segundos.
+> Wokwi no tiene un chip nativo para sensor capacitivo de humedad de suelo; se simula con un potenciómetro (misma salida analógica 0–100%), que es la práctica estándar de la comunidad Wokwi para este sensor.
+
+El código Arduino lee los 4 primeros sensores, escala los valores a rangos físicos plausibles (0–100 %) y postea a `/api/sensors/ingest` cada `READING_INTERVAL` (10s por defecto). El HC-SR04 se lee en un ciclo aparte y más rápido (cada 300ms) para detectar proximidad sostenida — ver sección "Detección de cariño" abajo.
 
 ## Flujo de Datos
 
@@ -96,6 +99,17 @@ API: validar → persistir en Supabase
     ↓
 Dashboard: GET /api/sensors/latest → actualizar modelo 3D
 ```
+
+## Detección de "cariño" (HC-SR04)
+
+El sensor ultrasónico mide la distancia entre el sensor y quien se acerca a la planta. La idea: si alguien se queda cerca un rato (no solo pasa caminando), cuenta como la tarea diaria de "darle cariño a la planta".
+
+**Estado actual: conectado al backend.** El código Arduino:
+
+1. Mide distancia cada 300ms (`readDistanceCm()`, fórmula estándar `pulseIn(ECHO) / 58`)
+2. Si la distancia es `≤ 30cm` sostenida durante `≥ 3s` (evita falsos positivos de alguien pasando cerca), marca `caredToday = true`, imprime por Serial `❤️ ¡Alguien le dio cariño a la planta hoy!` y llama a `postCareToAPI()`
+3. `postCareToAPI()` hace `POST /api/sensors/care` (mismo secret que el ingest de sensores) con `occurred_at` en ISO 8601; el backend persiste el evento en `care_log` (idempotente por día) y lo suma como 5ta métrica del sistema de puntos — 20 pts todo-o-nada (ver `docs/features/puntos.md`)
+4. El flag `caredToday` se resetea automáticamente al cambiar el día calendario (usa `tm_yday` de la hora sincronizada por NTP)
 
 ## Configuración del Servidor MCP
 
@@ -122,9 +136,10 @@ El archivo `.mcp.json` declara el servidor Wokwi para que Claude Code pueda:
 ## Restricciones
 
 - El token `WOKWI_CLI_TOKEN` debe estar en `.env.local`, nunca hardcodeado
-- El código Arduino usa `#include <WiFi.h>` y `#include <HTTPClient.h>` (libreríaas estándar del ESP32)
-- Los sensores virtuales en Wokwi están calibrados para devolver valores 0–1023 (ADC de 10 bits)
+- El código Arduino usa `#include <WiFi.h>` y `#include <HTTPClient.h>` (librerías estándar del ESP32)
+- El ADC del ESP32 es de 12 bits (0–4095), no 10 bits; el código escala sobre ese rango
 - El ESP32 debe estar conectado a una red WiFi simulada en Wokwi (la plataforma lo provisiona automáticamente)
+- **Hardware real (no aplica a la simulación):** el HC-SR04 trabaja a 5V y su pin `ECHO` puede dañar el GPIO del ESP32 (tolera 3.3V) si se conecta directo — requiere divisor de voltaje resistivo al armar el circuito físico. Ver `wokwi/README.md`
 
 ## Testing
 
@@ -159,3 +174,4 @@ curl -s http://localhost:3000/api/sensors/latest \
 - [ ] Testar conexión WiFi simulada en Wokwi
 - [ ] Validar que los datos llegan a Supabase
 - [ ] Documentar cómo editar el circuito (agregar sensores, cambiar pines)
+- [x] Backend de "cariño diario" (HC-SR04): tabla `care_log`, endpoint `POST /api/sensors/care`, 5ta métrica del sistema de puntos semanal (ver `docs/features/puntos.md`)
